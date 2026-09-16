@@ -56,7 +56,7 @@ store, default `App.vue`): every item below is genuinely not started.
         itself tested against a hand-mocked `fetch` (not `vi.mock()`, which
         would bypass the layer under test).
 
-- [ ] 3. **Design system setup** (`src/assets/main.css`, `src/main.ts`) -
+- [x] 3. **Design system setup** (`src/assets/main.css`, `src/main.ts`) -
       port the Tailwind v4 `@theme` block from `identite-visuelle.md` / the
       design system PDF into the real stylesheet: 3 surfaces + `line` +
       `fg`/`muted` + 4 signal colors (`accent`/`warn`/`info`/`danger`), 4

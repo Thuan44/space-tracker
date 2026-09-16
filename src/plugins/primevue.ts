@@ -1,0 +1,45 @@
+import type { PrimeVueConfiguration } from 'primevue/config'
+import type { PaginatorContext } from 'primevue/paginator'
+import type { ProgressBarProps } from 'primevue/progressbar'
+
+export const primeVueOptions: PrimeVueConfiguration = {
+  unstyled: true,
+  pt: {
+    datatable: {
+      root: 'rounded-md border border-line bg-surface-1 overflow-hidden',
+      table: 'w-full border-collapse',
+      thead: 'bg-surface-2',
+      headerRow: 'border-b border-line',
+      bodyRow: 'h-12 border-b border-line last:border-0 hover:bg-surface-2 transition-colors',
+    },
+    column: {
+      headerCell: 'h-10 px-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-muted',
+      columnTitle: 'inline-flex items-center gap-1.5',
+      sortIcon: 'size-4 text-muted/40 data-[p-sorted=true]:text-accent',
+      bodyCell: 'px-4 text-[13px] text-fg',
+    },
+    paginator: {
+      root: 'flex items-center justify-between gap-4 pt-4',
+      current: 'text-[11px] font-semibold uppercase tracking-[0.09em] text-muted',
+      pages: 'flex items-center gap-1.5',
+      page: ({ context }: { context: PaginatorContext }) => [
+        'size-8 rounded-sm border text-[13px]',
+        context.active
+          ? 'bg-accent border-accent text-surface-0 font-semibold'
+          : 'border-line text-muted hover:text-fg',
+      ],
+      prev: 'size-8 rounded-sm border border-line grid place-items-center hover:bg-surface-2 disabled:border-surface-2 disabled:text-muted/60',
+      next: 'size-8 rounded-sm border border-line grid place-items-center hover:bg-surface-2 disabled:border-surface-2 disabled:text-muted/60',
+    },
+    progressbar: {
+      root: 'h-2 w-full rounded-full bg-surface-2 overflow-hidden',
+      value: ({ props }: { props: ProgressBarProps }) => {
+        const pct = props.value ?? 0
+        return [
+          'h-full rounded-full transition-[width] duration-300',
+          pct >= 50 ? 'bg-accent' : pct >= 20 ? 'bg-warn' : 'bg-danger',
+        ]
+      },
+    },
+  },
+}
