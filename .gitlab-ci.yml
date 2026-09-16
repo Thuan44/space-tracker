@@ -1,0 +1,53 @@
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+stages:
+  - audit
+  - lint
+  - type-check
+  - test
+  - build
+
+default:
+  image: node:22-alpine
+
+npm-audit:
+  stage: audit
+  allow_failure: true
+  script:
+    - npm audit
+
+.npm_job:
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules/
+  before_script:
+    - npm ci
+
+lint:
+  extends: .npm_job
+  stage: lint
+  script:
+    - npm run lint
+
+type-check:
+  extends: .npm_job
+  stage: type-check
+  script:
+    - npm run type-check
+
+test:
+  extends: .npm_job
+  stage: test
+  script:
+    - npm run test:unit
+
+build:
+  extends: .npm_job
+  stage: build
+  script:
+    - npm run build-only

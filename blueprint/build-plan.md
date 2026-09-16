@@ -20,7 +20,7 @@ store, default `App.vue`): every item below is genuinely not started.
 
 ## Your features
 
-- [ ] 1. **CI/CD pipeline** - GitLab CI with 5 stages in order: `npm audit`
+- [x] 1. **CI/CD pipeline** - GitLab CI with 5 stages in order: `npm audit`
       (non-blocking, dependency vulnerabilities only — per `securite.md`
       "Dépendances") → lint (ESLint) → type-check (`vue-tsc`) → tests
       (Vitest) → build (`vite build`), the last four blocking each other in
