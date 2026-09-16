@@ -33,7 +33,7 @@ store, default `App.vue`): every item below is genuinely not started.
       no deploy stage. Must exist before any feature branch can merge to
       `main`, per the git workflow in `specs-techniques.md`.
 
-- [ ] 2. **Shared API client** (`shared/api/http.ts`) - foundation HTTP
+- [x] 2. **Shared API client** (`shared/api/http.ts`) - foundation HTTP
       client every feature's API calls go through. Adds Zod as a dependency
       (already in `package.json`) and the generic `request<T>(url, schema,
       options?)` function that pipes every JSON response through its Zod
