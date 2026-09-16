@@ -1,6 +1,6 @@
 # Space Tracker - Project Overview
 
-<!-- blueprint:source-hash 7839b4f696535a952e3a8c9565bed3f5f4a9f855c1f335a51786a2a5b8ef491f -->
+<!-- blueprint:source-hash eb713664f6e303acac6d33fb3eec0baebdc8537d397a976c6c3c0fc8b8b8712e -->
 
 > A read-only web control panel for a SpaceTraders agent: authenticate with an
 > agent token, then browse fleet, systems, and market data without hitting the
@@ -40,7 +40,7 @@ control panel over one agent's data at a time.
 
 ## Features
 
-In build order. **Fleet management (#9-#10) is the headline feature** — the
+In build order. **Fleet management (#10-#11) is the headline feature** — the
 richest data model (fuel, cargo, crew, components) and the clearest expression
 of the "control-room console" concept.
 
@@ -52,39 +52,45 @@ of the "control-room console" concept.
    `Authorization` injection from the Pinia token store (overridable via
    `options.token`), centralized 401 → `/login` redirect (skippable via
    `options.skipAuthRedirect`), and list pagination handling.
-3. **Auth: login + token store** (`/login`) - token input, validates via
+3. **Design system setup** (`src/assets/main.css`, `src/main.ts`) - port the
+   Tailwind v4 `@theme` tokens (surfaces, signal colors, radii, font) from
+   `identite-visuelle.md`/the design system PDF into the real stylesheet, add
+   `@fontsource/ibm-plex-mono`, and configure PrimeVue's global unstyled
+   pass-through for `DataTable`+`Paginator` and `ProgressBar` (the two
+   components a planned feature actually uses).
+4. **Auth: login + token store** (`/login`) - token input, validates via
    `GET /my/agent` using `options.token` (nothing is stored yet), stores on
    success, inline error on failure. Pinia store persisted to
    `sessionStorage`.
-4. **Authenticated layout** - top nav (Dashboard/Systems/Fleet, no
+5. **Authenticated layout** - top nav (Dashboard/Systems/Fleet, no
    submenus), active item highlighted, logout clears the token.
-5. **Dashboard** (`/`) - 4 agent tiles (identity/faction, credits, ship
+6. **Dashboard** (`/`) - 4 agent tiles (identity/faction, credits, ship
    count, starting system) + a fleet preview mini-table linking to `/fleet`.
-6. **Systems list** (`/systems`) - paginated table of known systems: symbol,
+7. **Systems list** (`/systems`) - paginated table of known systems: symbol,
    name, sector, star type, waypoint count. First table in the app.
-7. **System detail** (`/systems/:systemSymbol`) - header + paginated
+8. **System detail** (`/systems/:systemSymbol`) - header + paginated
    waypoints table (type/trait badges; `MARKETPLACE` links to a market,
    `SHIPYARD` flagged).
-8. **Extract shared DataTable** (`shared/ui/DataTable`) - sort/search/
+9. **Extract shared DataTable** (`shared/ui/DataTable`) - sort/search/
    pagination logic pulled out of Systems list once Fleet list is its second
    real consumer; Systems list migrated onto it, no behavior change.
-9. **Fleet list** (`/fleet`) - paginated table of ships: role, status badge,
-   position, ETA (if `IN_TRANSIT`), cargo (units/capacity), fuel
-   (current/capacity).
-10. **Fleet detail** (`/fleet/:shipSymbol`) - header (status, position, ETA,
+10. **Fleet list** (`/fleet`) - paginated table of ships: role, status badge,
+    position, ETA (if `IN_TRANSIT`), cargo (units/capacity), fuel
+    (current/capacity).
+11. **Fleet detail** (`/fleet/:shipSymbol`) - header (status, position, ETA,
     fuel, cooldown); cargo table; crew; frame/reactor/engine/modules/mounts.
-11. **Market** (`/markets/:waypointSymbol`) - traded goods table (price,
+12. **Market** (`/markets/:waypointSymbol`) - traded goods table (price,
     volume, supply, activity); "limited info" state when `tradeGoods` is
     absent (only present when an agent ship is on the waypoint). Reached only
     by drill-down, no direct nav entry.
-12. **404 page** - catch-all route, "not found" + link to `/`.
-13. **Documentation (README)** - setup, run locally, stack. Per-feature docs
+13. **404 page** - catch-all route, "not found" + link to `/`.
+14. **Documentation (README)** - setup, run locally, stack. Per-feature docs
     are already produced by `/complete` archiving under `blueprint/history/`.
 
 ## Data model
 
 Server data is fetched and cached via TanStack Query, never duplicated into
-Pinia. `Ship`'s schema builds incrementally across features 5 → 9 → 10; other
+Pinia. `Ship`'s schema builds incrementally across features 6 → 10 → 11; other
 models are colocated with the single feature that introduces them.
 
 ### Agent
@@ -125,8 +131,8 @@ models are colocated with the single feature that introduces them.
 ### Ship
 
 `GET /my/ships`, `GET /my/ships/:shipSymbol` —
-`features/fleet/api/ship.schema.ts`, introduced minimal in #5 (`symbol`,
-`status`, `waypointSymbol`), extended in #9, extended again in #10.
+`features/fleet/api/ship.schema.ts`, introduced minimal in #6 (`symbol`,
+`status`, `waypointSymbol`), extended in #10, extended again in #11.
 
 - `symbol` (string)
 - `registration.role` (string)
@@ -163,6 +169,7 @@ models are colocated with the single feature that introduces them.
 - **Tailwind 4** - 100% of styling
 - **PrimeVue (unstyled)** - interaction logic only (sortable/paginated
   `DataTable`, dropdowns, modals, keyboard a11y); Tailwind drives all visuals
+- **@fontsource/ibm-plex-mono** - self-hosted IBM Plex Mono (400/500/600/700)
 - **TanStack Query (Vue Query)** - server-state fetching/caching, one
   `useQuery` per screen/resource, no mutations
 - ESLint + oxlint + Prettier

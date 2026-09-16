@@ -44,7 +44,7 @@ store, default `App.vue`): every item below is genuinely not started.
       handling in the client rather than per-consumer. `options.token` lets a
       caller override the store lookup with an explicit token, and
       `options.skipAuthRedirect` skips the centralized 401 → `/login`
-      redirect — both used only by the login validation call (#3), never
+      redirect — both used only by the login validation call (#4), never
       logged, same as the store token. Domain schemas
       (`Agent`, `System`, `Ship`, `Market`) are **not** built here — they
       ship colocated with their own feature below. SpaceTraders API base URL
@@ -56,7 +56,34 @@ store, default `App.vue`): every item below is genuinely not started.
         itself tested against a hand-mocked `fetch` (not `vi.mock()`, which
         would bypass the layer under test).
 
-- [ ] 3. **Auth: login + token store** (`features/auth`) - `/login` route:
+- [ ] 3. **Design system setup** (`src/assets/main.css`, `src/main.ts`) -
+      port the Tailwind v4 `@theme` block from `identite-visuelle.md` / the
+      design system PDF into the real stylesheet: 3 surfaces + `line` +
+      `fg`/`muted` + 4 signal colors (`accent`/`warn`/`info`/`danger`), 4
+      border radii (`xs`/`sm`/`md`/full), `--font-mono`; plus `@layer base
+      body` (background, color, font-family, `font-variant-numeric:
+      tabular-nums`). No custom spacing tokens needed — the design system's
+      4px scale already matches Tailwind's default spacing utilities
+      (`p-1`…`p-10`). Adds `@fontsource/ibm-plex-mono` (400/500/600/700) as a
+      new dependency to self-host IBM Plex Mono — the design docs specify
+      the typeface but not a loading mechanism, and self-hosting avoids an
+      external Google Fonts request. Configures PrimeVue's global unstyled
+      pass-through (`app.use(PrimeVue, { pt: {...} })`) for the two
+      components a currently planned feature actually uses and the design
+      system already gives exact `pt` objects for: `DataTable` + `Paginator`
+      (table/pagination classes) and `ProgressBar` (fuel/cargo/condition
+      gauge threshold coloring) — set once here so no later feature repeats
+      them. Does not configure `Dialog` (no planned feature uses a modal
+      yet) and does not extract Badge/Button/Card as shared Vue components;
+      those stay Tailwind utility-class recipes applied per-usage in the
+      feature that needs them first, per `specs-techniques.md` ("pas de
+      composant partagé conçu à l'avance") — the same principle that defers
+      the DataTable extraction to #9. `Dialog`'s pass-through gets added by
+      whichever future feature introduces the first modal.
+      - Tests: none (CSS tokens and plugin configuration, no logic to
+        assert).
+
+- [ ] 4. **Auth: login + token store** (`features/auth`) - `/login` route:
       token input, link to https://my.spacetraders.io/login, validates via
       `GET /my/agent` (stores token on success, error message on failure),
       submit button with loading state. Validation call is a direct API-client
@@ -72,13 +99,13 @@ store, default `App.vue`): every item below is genuinely not started.
       - Tests: `agentSchema` valid + contract-breaking case via
         `safeParse()`; Pinia store login/logout.
 
-- [ ] 4. **Authenticated layout** (header/nav) - top nav bar (Dashboard,
+- [ ] 5. **Authenticated layout** (header/nav) - top nav bar (Dashboard,
       Systems, Fleet — no submenus), active item highlighted by current
       route; logout button clears the token and redirects to `/login`.
       Shown on all authenticated routes, absent on `/login` and the 404
-      page. Depends on the token store (#3) for the logout action.
+      page. Depends on the token store (#4) for the logout action.
 
-- [ ] 5. **Dashboard** (`/`) - 4 same-size tiles (identity + faction badge,
+- [ ] 6. **Dashboard** (`/`) - 4 same-size tiles (identity + faction badge,
       credits, ship count, starting system with link to
       `/systems/:systemSymbol`, all from `Agent`), fleet preview mini-table
       (symbol/status/position — status as a readable-text badge, e.g.
@@ -86,17 +113,17 @@ store, default `App.vue`): every item below is genuinely not started.
       fleet" link to `/fleet`. Loading (skeleton/spinner) and error (retry)
       states.
       - **Dependency note**: the fleet preview reuses the same
-        `GET /my/ships` call as the `/fleet` list (#9). Since #5 is built
-        before #9, this item introduces `features/fleet/api/ship.schema.ts`
+        `GET /my/ships` call as the `/fleet` list (#10). Since #6 is built
+        before #10, this item introduces `features/fleet/api/ship.schema.ts`
         and the ships API function — but with only the fields the preview
         needs (`symbol`, `status`, `waypointSymbol`), not the full `Ship`
-        shape. #9 and #10 progressively extend this same schema with the
-        fields they each need, rather than #5 front-loading all of it.
+        shape. #10 and #11 progressively extend this same schema with the
+        fields they each need, rather than #6 front-loading all of it.
       - Tests: `useQuery` composable for a single resource (`Agent`) —
         success/loading/error states. First genuine `useQuery` consumer in
         build order (Auth's login call is a direct call, not a `useQuery`).
 
-- [ ] 6. **Systems list** (`/systems`) - `GET /systems`, paginated
+- [ ] 7. **Systems list** (`/systems`) - `GET /systems`, paginated
       DataTable: symbol (link to detail), name (falls back to symbol),
       sector, star type, waypoint count. Filter by symbol/sector, sort by
       star type and waypoint count, server-side pagination. Loading/error
@@ -109,7 +136,7 @@ store, default `App.vue`): every item below is genuinely not started.
         screens (System detail, Fleet list/detail, Market) reuse this same
         paginated-list shape without their own dedicated composable test.
 
-- [ ] 7. **System detail** (`/systems/:systemSymbol`) - header (symbol,
+- [ ] 8. **System detail** (`/systems/:systemSymbol`) - header (symbol,
       name, sector, constellation, star type, x/y); waypoints table
       (`GET /systems/:systemSymbol/waypoints`, paginated separately from
       `System.waypoints`): symbol, type, trait badges as readable text
@@ -119,36 +146,36 @@ store, default `App.vue`): every item below is genuinely not started.
       link to `/systems`. Colocated schema:
       `features/systems/api/waypoint.schema.ts`.
 
-- [ ] 8. **Extract shared DataTable** (`shared/ui/DataTable`) - pull the
-      sort/search/pagination logic out of the Systems list (#6) table into a
+- [ ] 9. **Extract shared DataTable** (`shared/ui/DataTable`) - pull the
+      sort/search/pagination logic out of the Systems list (#7) table into a
       shared component, informed by both Systems list's real usage and the
-      Fleet list's spec'd needs (#9) as the second consumer. Migrate Systems
+      Fleet list's spec'd needs (#10) as the second consumer. Migrate Systems
       list onto it. No user-visible behavior change — verified by Systems
       list's existing coverage plus new tests on the extracted logic. Per
       `specs-techniques.md`: no component designed ahead of time, extracted
       only once a second real need is known ("2e occurrence").
 
-- [ ] 9. **Fleet list** (`/fleet`) - `GET /my/ships`, built on
-      `shared/ui/DataTable` (#8): symbol (link to detail), role, status as a
+- [ ] 10. **Fleet list** (`/fleet`) - `GET /my/ships`, built on
+      `shared/ui/DataTable` (#9): symbol (link to detail), role, status as a
       readable-text badge (IN_ORBIT/DOCKED/IN_TRANSIT), current position,
       ETA (if IN_TRANSIT), cargo (units/capacity), fuel (current/capacity).
       Filter by
       role/status, sort, server-side pagination, loading/error states.
-      Extends `features/fleet/api/ship.schema.ts` (introduced in #5) with
+      Extends `features/fleet/api/ship.schema.ts` (introduced in #6) with
       `role`, `cargo`, `fuel`, `route.arrival`.
 
-- [ ] 10. **Fleet detail** (`/fleet/:shipSymbol`) - header (symbol, role,
+- [ ] 11. **Fleet detail** (`/fleet/:shipSymbol`) - header (symbol, role,
       status as a readable-text badge, current position — link to
       `/markets/:waypointSymbol` if that waypoint has a market, ETA if
       IN_TRANSIT, fuel level, cooldown); cargo table (item/quantity vs.
       capacity); crew (current/required/capacity, morale, rotation, wages);
       components (frame/reactor/engine — name + condition, modules/mounts
       as readable-text badges); back link to `/fleet`. Extends
-      `features/fleet/api/ship.schema.ts` (introduced in #5, extended in
-      #9) with `crew`, `frame`, `reactor`, `engine`, `modules`, `mounts`,
+      `features/fleet/api/ship.schema.ts` (introduced in #6, extended in
+      #10) with `crew`, `frame`, `reactor`, `engine`, `modules`, `mounts`,
       `cooldown`.
 
-- [ ] 11. **Market** (`/markets/:waypointSymbol`) - header (waypoint symbol,
+- [ ] 12. **Market** (`/markets/:waypointSymbol`) - header (waypoint symbol,
       back link to parent system); traded goods table (name, type
       import/export/exchange, buy price, sell price, trade volume, supply,
       activity). Filter by name/type, sort by price/volume. "Limited info"
@@ -158,13 +185,13 @@ store, default `App.vue`): every item below is genuinely not started.
       everything at once). Loading/error states. Colocated schema:
       `features/markets/api/market.schema.ts`.
 
-- [ ] 12. **404 page** - catch-all Vue Router route
+- [ ] 13. **404 page** - catch-all Vue Router route
       (`/:pathMatch(.*)*`), "page not found" message + link back to `/`.
       Distinct from the per-screen "error (retry)" states, which cover API
       call failures rather than a nonexistent route. No header/nav (same as
       `/login`).
 
-- [ ] 13. **Documentation (README)** - required deliverable per `brief.md`
+- [ ] 14. **Documentation (README)** - required deliverable per `brief.md`
       ("Documentation claire") and `todo.md` ("Qualité"): general README
       covering setup, running locally, and the stack. Per-feature/fix
       documentation is already produced by `/complete` archiving each item

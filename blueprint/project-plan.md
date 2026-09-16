@@ -131,6 +131,9 @@ From `specs-techniques.md`, already scaffolded in this repo:
 - **PrimeVue (unstyled)** — interaction logic for complex components
   (sortable/paginated `DataTable`, dropdowns, modals, keyboard a11y) with
   Tailwind driving 100% of the visuals
+- **@fontsource/ibm-plex-mono** — self-hosted IBM Plex Mono (400/500/600/700);
+  the design docs specify the typeface but not a loading mechanism, chosen
+  over an external Google Fonts `<link>`
 - **TanStack Query (Vue Query)** — server-state fetching/caching, one basic
   `useQuery` per screen/resource, default `staleTime`, no mutations
 - ESLint + oxlint + Prettier (already configured)
