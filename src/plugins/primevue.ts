@@ -2,7 +2,9 @@ import type { PrimeVueConfiguration } from 'primevue/config'
 import type { PaginatorContext } from 'primevue/paginator'
 import type { ProgressBarProps } from 'primevue/progressbar'
 
-export const primeVueOptions: PrimeVueConfiguration = {
+// `license` is read at runtime by @primevue/core but missing from PrimeVueConfiguration's types.
+export const primeVueOptions: PrimeVueConfiguration & { license?: string } = {
+  license: import.meta.env.VITE_PRIMEUI_LICENCE_KEY,
   unstyled: true,
   pt: {
     datatable: {
@@ -13,7 +15,8 @@ export const primeVueOptions: PrimeVueConfiguration = {
       bodyRow: 'h-12 border-b border-line last:border-0 hover:bg-surface-2 transition-colors',
     },
     column: {
-      headerCell: 'h-10 px-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-muted',
+      headerCell:
+        'h-10 px-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-muted',
       columnTitle: 'inline-flex items-center gap-1.5',
       sortIcon: 'size-4 text-muted/40 data-[p-sorted=true]:text-accent',
       bodyCell: 'px-4 text-[13px] text-fg',
