@@ -291,19 +291,25 @@ checks do not make the Blueprint unusable.
 
 ## Commands
 
-<!-- blueprint:onboarding-required -->
-For a standard Next.js project. Change or remove if you're using something else.
+Vue 3 + Vite + TypeScript project, using npm.
 
-- Dev server: `npm run dev` (http://localhost:3000)
-- Build: `npm run build`
-- Production server: `npm run start`
-- Lint: `npm run lint`
+- Dev server: `npm run dev` (http://localhost:5173)
+- Build: `npm run build` (type-check, then `vite build`)
+- Preview production build: `npm run preview`
+- Type-check: `npm run type-check`
+- Test: `npm run test:unit` (Vitest)
+- Lint: `npm run lint` (oxlint, then ESLint; both run with `--fix` and rewrite files)
+- Format: `npm run format` (Prettier, `src/` only)
 
-Testing is opt-in. If this project does not already have a unit test runner, run
-`/tests` or `$tests` to add one and update this section with the real test
-commands.
+A unit test runner (Vitest) is already configured, so tests are a gate for
+logic-bearing implementation steps. See the Testing section of
+`coding-standards.md`.
 
-Browser testing is also opt-in. Run `/tests browser` or `$tests browser` to add
-or normalize a browser harness and document its exact command as `Browser
-tests`. Check and Continuous Mode can then reuse it without installing tooling
-mid-feature.
+Browser testing is opt-in and not yet configured. Run `/tests browser` or
+`$tests browser` to add a browser harness and document its exact command as
+`Browser tests`. Check and Continuous Mode can then reuse it without installing
+tooling mid-feature.
+
+No combined `Verify` command or automatic GitHub checks exist yet. Run `/ci` or
+`$ci` when you want one Verify command (typecheck, test, build) and matching
+GitHub checks on pull requests.

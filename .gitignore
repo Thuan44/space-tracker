@@ -28,6 +28,11 @@ coverage
 
 .eslintcache
 
+# Env files
+.env
+.env.*
+!.env.example
+
 # Cypress
 /cypress/videos/
 /cypress/screenshots/
@@ -37,3 +42,7 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Blueprint (Obsidian symlinks)
+blueprint/reference
+blueprint/specs

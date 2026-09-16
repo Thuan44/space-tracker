@@ -1,54 +1,37 @@
 # Coding Standards
 
-> Your conventions. Edit these once to match your stack. The defaults below
-> assume Next.js + TypeScript + Tailwind + Prisma; change or trim anything that
-> doesn't fit your project.
->
-> Run `/onboard` after installing the Blueprint. It tunes this file to the real
-> project stack, along with `AGENTS.md`, `CLAUDE.md` when present,
-> `ai-interaction.md`, `.gitignore`, and README placement. Review the result
-> before `/overview`.
+> Your conventions. Tuned by `/onboard` to Vue 3 + Vite + TypeScript + Tailwind
+> v4 + PrimeVue (unstyled) + Pinia + TanStack Query + Zod; edit anything that
+> doesn't fit as the project evolves.
 
 ## TypeScript
 
 - Strict mode enabled
 - No `any` types - use proper typing or `unknown`
-- Define interfaces for all props, API responses, and data models
+- Define types/interfaces for all props, API responses, and data models
 - Use type inference where obvious, explicit types where helpful
 
-## React
+## Vue
 
-- Functional components only (no class components)
-- Use hooks for state and side effects
+- `<script setup lang="ts">` composition API only (no Options API, no class components)
 - Keep components focused - one job per component
-- Extract reusable logic into custom hooks
-
-## Next.js
-
-- Server components by default
-- Only use `'use client'` when needed (interactivity, hooks, browser APIs)
-- Use Server Actions for form submissions and simple mutations
-- Use API routes when you need:
-  - Webhooks (Clerk, GitHub, etc.)
-  - File uploads with progress tracking
-  - Long-running operations
-  - Specific HTTP status codes or headers
-  - Endpoints for future mobile/CLI clients
-  - Third-party integrations
-- Otherwise, fetch data directly in server components
-- Dynamic routes for item/collection pages
+- Extract reusable logic into composables (`src/composables/use[Name].ts`)
+- Props and emits typed with `defineProps<T>()` / `defineEmits<T>()`
+- Pinia for shared/global state (`src/stores/`); local component state stays in the component
+- Vue Router for navigation (`src/router/`)
 
 ## File Organization
 
-- Components: `src/components/[feature]/ComponentName.tsx`
-- Pages: `src/app/[route]/page.tsx`
-- Server Actions: `src/actions/[feature].ts`
+- Views/pages: `src/views/[Name]View.vue`
+- Components: `src/components/[feature]/ComponentName.vue`
+- Composables: `src/composables/use[Name].ts`
+- Stores: `src/stores/[name].ts`
 - Types: `src/types/[feature].ts`
 - Lib/Utils: `src/lib/[utility].ts`
 
 ## Naming
 
-- Components: PascalCase (`ItemCard.tsx`)
+- Components: PascalCase (`ItemCard.vue`)
 - Files: Match component name or kebab-case
 - Functions: camelCase
 - Constants: SCREAMING_SNAKE_CASE
@@ -56,31 +39,20 @@
 
 ## Styling
 
-- Tailwind CSS for all styling
-- Tailwind v4: CSS-first config (`@theme` in `globals.css`), no `tailwind.config.js`
-- Use shadcn/ui components where applicable
+- Tailwind CSS v4 for all styling: CSS-first config (`@import 'tailwindcss'` in `src/assets/main.css`, `@theme` for customization), no `tailwind.config.js`
+- PrimeVue components in unstyled mode (`app.use(PrimeVue, { unstyled: true })`) for behavior/accessibility; style them with Tailwind utility classes, not PrimeVue's default themes
 - No inline styles
-- Dark mode first, light mode as option
-
-## Database
-
-- Use Prisma ORM for all database operations
-- Always use `prisma migrate dev` for schema changes (not `db push`)
-- Run `prisma migrate status` before committing to verify migrations are in sync
-- Production deployments must run `prisma migrate deploy` before the app starts
 
 ## Data Fetching
 
-- Server components fetch directly with Prisma
-- Client components use Server Actions
-- Validate all inputs with Zod
-- Scope every user-owned query by the authenticated Clerk user id (`clerkUserId`); never trust a client-supplied user id
+- TanStack Query (`@tanstack/vue-query`) for server state: queries and mutations, not ad-hoc `fetch` + refs
+- Validate external data (API responses, form input) with Zod schemas; derive TypeScript types from schemas with `z.infer` rather than duplicating them
+- Parse untrusted input at the boundary (API responses, route params, form submissions), not deep inside components
 
 ## Error Handling
 
-- Use try/catch in Server Actions
-- Return `{ success, data, error }` pattern from actions
-- Display user-friendly error messages via toast
+- Surface query/mutation errors from TanStack Query state (`isError`, `error`) rather than try/catch around calls
+- Display user-friendly error messages in the UI
 
 ## Testing
 
@@ -125,9 +97,9 @@ of the switch; the skills and `ai-interaction.md` only point back here.
 - Run them via the project's test command (see Commands in `AGENTS.md`), not a
   hardcoded tool name.
 
-Stack binding (swap for yours): a TypeScript app uses Vitest, `vi.mock()` for
-external dependencies (Prisma, Clerk, etc.), and `vi.useFakeTimers()` for
-time-dependent logic; a Python app would use pytest; a Go app `go test`.
+This project uses Vitest (`npm run test:unit`), `@vue/test-utils` for component
+tests, `vi.mock()` for external dependencies, and `vi.useFakeTimers()` for
+time-dependent logic.
 
 ## Browser Verification
 
