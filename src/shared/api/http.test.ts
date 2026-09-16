@@ -5,7 +5,7 @@ import { request, requestPage } from './http'
 import { useTokenStore } from '@/stores/token'
 
 vi.mock('@/router', () => ({
-  default: { push: vi.fn() },
+  default: { push: vi.fn<(to: string) => void>() },
 }))
 
 import router from '@/router'
