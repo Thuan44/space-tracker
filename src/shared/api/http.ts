@@ -19,6 +19,9 @@ async function fetchJson(url: string, options?: RequestOptions): Promise<unknown
 
   if (!response.ok) {
     if (response.status === 401) {
+      if (!options?.token) {
+        tokenStore.logout()
+      }
       if (!options?.skipAuthRedirect) {
         router.push('/login')
       }

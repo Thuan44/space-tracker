@@ -83,7 +83,7 @@ store, default `App.vue`): every item below is genuinely not started.
       - Tests: none (CSS tokens and plugin configuration, no logic to
         assert).
 
-- [ ] 4. **Auth: login + token store** (`features/auth`) - `/login` route:
+- [x] 4. **Auth: login + token store** (`features/auth`) - `/login` route:
       token input, link to https://my.spacetraders.io/login, validates via
       `GET /my/agent` (stores token on success, error message on failure),
       submit button with loading state. Validation call is a direct API-client

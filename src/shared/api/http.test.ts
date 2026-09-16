@@ -23,6 +23,7 @@ function jsonResponse(status: number, body: unknown) {
 
 describe('request', () => {
   beforeEach(() => {
+    sessionStorage.clear()
     setActivePinia(createPinia())
     vi.stubGlobal('fetch', vi.fn())
     vi.mocked(router.push).mockClear()
@@ -69,6 +70,29 @@ describe('request', () => {
     expect(router.push).toHaveBeenCalledWith('/login')
   })
 
+  it('clears the stored token on a 401 when the store token was used', async () => {
+    const tokenStore = useTokenStore()
+    tokenStore.login('store-token')
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(401, {}))
+
+    await expect(request('/my/agent', schema)).rejects.toThrow('Request failed')
+
+    expect(tokenStore.token).toBeNull()
+    expect(sessionStorage.getItem('token')).toBeNull()
+  })
+
+  it('does not clear the stored token on a 401 for an explicit token override', async () => {
+    const tokenStore = useTokenStore()
+    tokenStore.login('store-token')
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(401, {}))
+
+    await expect(
+      request('/my/agent', schema, { token: 'override-token', skipAuthRedirect: true }),
+    ).rejects.toThrow('Request failed')
+
+    expect(tokenStore.token).toBe('store-token')
+  })
+
   it('does not redirect on 401 when skipAuthRedirect is set', async () => {
     vi.mocked(fetch).mockResolvedValue(jsonResponse(401, {}))
 
@@ -107,6 +131,7 @@ describe('request', () => {
 
 describe('requestPage', () => {
   beforeEach(() => {
+    sessionStorage.clear()
     setActivePinia(createPinia())
     vi.stubGlobal('fetch', vi.fn())
     vi.mocked(router.push).mockClear()
