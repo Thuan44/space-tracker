@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
+import { SignOut } from '@primeicons/vue'
 import { useTokenStore } from '@/stores/token'
 
 const route = useRoute()
@@ -37,10 +38,9 @@ function handleLogout() {
       </nav>
     </div>
 
-    <button type="button"
-      class="cursor-pointer rounded-sm border border-line px-3 py-1.5 text-base text-muted hover:text-fg"
-      @click="handleLogout">
-      Log out
+    <button type="button" aria-label="Log out" title="Log out"
+      class="cursor-pointer rounded-sm border border-line p-1.5 text-muted hover:text-fg" @click="handleLogout">
+      <SignOut class="size-4" />
     </button>
   </header>
 </template>
