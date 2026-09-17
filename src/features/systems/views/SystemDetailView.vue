@@ -33,6 +33,7 @@ const {
 } = useQuery({
   queryKey: ['waypoints', systemSymbol, waypointsPage],
   queryFn: () => getWaypoints(systemSymbol, { page: waypointsPage.value }),
+  enabled: computed(() => !!system.value),
 })
 
 const waypointRows = computed(
@@ -124,7 +125,7 @@ function traitClasses(trait: string): string {
       </div>
     </template>
 
-    <div class="mt-6">
+    <div v-if="system" class="mt-6">
       <input v-model="waypointsFilterText" type="text" placeholder="Filter by symbol, type or trait"
         class="block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none" />
 
