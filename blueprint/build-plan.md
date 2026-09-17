@@ -99,7 +99,7 @@ store, default `App.vue`): every item below is genuinely not started.
       - Tests: `agentSchema` valid + contract-breaking case via
         `safeParse()`; Pinia store login/logout.
 
-- [ ] 5. **Authenticated layout** (header/nav) - top nav bar (Dashboard,
+- [x] 5. **Authenticated layout** (header/nav) - top nav bar (Dashboard,
       Systems, Fleet — no submenus), active item highlighted by current
       route; logout button clears the token and redirects to `/login`.
       Shown on all authenticated routes, absent on `/login` and the 404
