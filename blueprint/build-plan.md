@@ -123,7 +123,7 @@ store, default `App.vue`): every item below is genuinely not started.
         success/loading/error states. First genuine `useQuery` consumer in
         build order (Auth's login call is a direct call, not a `useQuery`).
 
-- [ ] 7. **Systems list** (`/systems`) - `GET /systems`, paginated
+- [x] 7. **Systems list** (`/systems`) - `GET /systems`, paginated
       DataTable: symbol (link to detail), name (falls back to symbol),
       sector, star type, waypoint count. Filter by symbol/sector, sort by
       star type and waypoint count, server-side pagination. Loading/error

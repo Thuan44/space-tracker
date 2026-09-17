@@ -16,23 +16,27 @@ export const primeVueOptions: PrimeVueConfiguration & { license?: string } = {
     },
     column: {
       headerCell:
-        'h-10 px-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-muted',
-      columnTitle: 'inline-flex items-center gap-1.5',
+        'h-10 px-4 text-left text-[12px] font-semibold uppercase tracking-[0.09em] text-muted',
+      columnHeaderContent: 'inline-flex items-center gap-1.5',
       sortIcon: 'size-4 text-muted/40 data-[p-sorted=true]:text-accent',
-      bodyCell: 'px-4 text-[13px] text-fg',
+      bodyCell: 'px-4 text-base text-fg',
     },
     paginator: {
       root: 'flex items-center justify-between gap-4 pt-4',
+      content: 'flex items-center gap-1.5',
       current: 'text-[11px] font-semibold uppercase tracking-[0.09em] text-muted',
       pages: 'flex items-center gap-1.5',
       page: ({ context }: { context: PaginatorContext }) => [
-        'size-8 rounded-sm border text-[13px]',
+        'size-8 cursor-pointer rounded-sm border text-[13px]',
         context.active
           ? 'bg-accent border-accent text-surface-0 font-semibold'
           : 'border-line text-muted hover:text-fg',
       ],
-      prev: 'size-8 rounded-sm border border-line grid place-items-center hover:bg-surface-2 disabled:border-surface-2 disabled:text-muted/60',
-      next: 'size-8 rounded-sm border border-line grid place-items-center hover:bg-surface-2 disabled:border-surface-2 disabled:text-muted/60',
+      first:
+        'size-8 cursor-pointer rounded-sm border border-line grid place-items-center hover:bg-surface-2 disabled:cursor-not-allowed disabled:border-surface-2 disabled:text-muted/60',
+      prev: 'size-8 cursor-pointer rounded-sm border border-line grid place-items-center hover:bg-surface-2 disabled:cursor-not-allowed disabled:border-surface-2 disabled:text-muted/60',
+      next: 'size-8 cursor-pointer rounded-sm border border-line grid place-items-center hover:bg-surface-2 disabled:cursor-not-allowed disabled:border-surface-2 disabled:text-muted/60',
+      last: 'size-8 cursor-pointer rounded-sm border border-line grid place-items-center hover:bg-surface-2 disabled:cursor-not-allowed disabled:border-surface-2 disabled:text-muted/60',
     },
     progressbar: {
       root: 'h-2 w-full rounded-full bg-surface-2 overflow-hidden',

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/features/auth/views/LoginView.vue'
 import DashboardView from '@/features/dashboard/views/DashboardView.vue'
+import SystemsView from '@/features/systems/views/SystemsView.vue'
 import { redirectIfAuthenticated, requireAuth } from './guards'
 
 const router = createRouter({
@@ -8,6 +9,7 @@ const router = createRouter({
   routes: [
     { path: '/login', name: 'login', component: LoginView, beforeEnter: redirectIfAuthenticated },
     { path: '/', name: 'dashboard', component: DashboardView, beforeEnter: requireAuth },
+    { path: '/systems', name: 'systems', component: SystemsView, beforeEnter: requireAuth },
   ],
 })
 
