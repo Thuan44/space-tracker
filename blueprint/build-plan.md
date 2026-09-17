@@ -140,7 +140,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       link to `/systems`. Colocated schema:
       `features/systems/api/waypoint.schema.ts`.
 
-- [ ] 9. **Systems list: search by symbol** (`/systems`) - search field next
+- [x] 9. **Systems list: search by symbol** (`/systems`) - search field next
       to the existing filter/sort controls on the Systems list (#7), plus an
       "Explore"/validate button. Field input is validated against the exact
       system symbol format (`SECTOR-SYSTEM`, e.g. `X1-DF55`) with Zod as the

@@ -82,7 +82,7 @@ function traitClasses(trait: string): string {
 <template>
   <div class="p-8">
     <RouterLink to="/systems"
-      class="inline-flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.09em] text-info hover:underline">
+      class="text-[13px] font-semibold uppercase tracking-[0.09em] text-info hover:underline">
       <span aria-hidden="true">&larr;</span> Back to systems
     </RouterLink>
 

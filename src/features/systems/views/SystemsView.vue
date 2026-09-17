@@ -1,14 +1,39 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Paginator, { type PageState } from 'primevue/paginator'
 import { useSystemsQuery } from '../composables/useSystemsQuery'
 import { toReadableText } from '@/shared/lib/spacetraders'
+import { symbolSchema } from '../lib/symbol.schema'
+
+const EXPLORE_DELAY_MS = 600
+
+const router = useRouter()
 
 const page = ref(1)
 const filterText = ref('')
+
+const searchSymbol = ref('')
+const searchState = ref<'idle' | 'loading' | 'ready'>('idle')
+
+const parsedSymbol = computed(() => symbolSchema.safeParse(searchSymbol.value))
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function handleExplore() {
+  if (!parsedSymbol.value.success || searchState.value !== 'idle') return
+
+  searchState.value = 'loading'
+  await delay(EXPLORE_DELAY_MS)
+  searchState.value = 'ready'
+  await delay(EXPLORE_DELAY_MS)
+
+  router.push(`/systems/${parsedSymbol.value.data}`)
+}
 
 const { data, isPending, isError, refetch } = useSystemsQuery(page)
 
@@ -43,8 +68,23 @@ const totalPages = computed(() =>
   <div class="p-8">
     <h2 class="text-[20px] font-semibold uppercase tracking-[0.06em] text-accent">Systems</h2>
 
-    <input v-model="filterText" type="text" placeholder="Filter by symbol, name, sector or start type"
-      class="mt-4 block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none" />
+    <div class="mt-4 flex flex-wrap items-start gap-4">
+      <input v-model="filterText" type="text" placeholder="Filter by symbol, name, sector or star type"
+        class="block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none" />
+
+      <form class="flex gap-2" @submit.prevent="handleExplore">
+        <input v-model="searchSymbol" type="text" placeholder="Explore system symbol, e.g. X1-DF55"
+          :disabled="searchState !== 'idle'"
+          class="block w-96 rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none disabled:opacity-60" />
+        <button type="submit" :disabled="!parsedSymbol.success || searchState !== 'idle'"
+          class="flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-sm bg-accent px-4 text-[13px] font-semibold text-surface-0 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60">
+          <span v-if="searchState === 'loading'"
+            class="h-4 w-4 animate-spin rounded-full border-2 border-surface-0/30 border-t-surface-0" />
+          <span v-else-if="searchState === 'ready'">System found !</span>
+          <span v-else>Explore</span>
+        </button>
+      </form>
+    </div>
 
     <div v-if="isPending" class="mt-4 h-96 animate-pulse rounded-md border border-line bg-surface-1" />
 
