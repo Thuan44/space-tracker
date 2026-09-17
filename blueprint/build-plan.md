@@ -105,7 +105,7 @@ store, default `App.vue`): every item below is genuinely not started.
       Shown on all authenticated routes, absent on `/login` and the 404
       page. Depends on the token store (#4) for the logout action.
 
-- [ ] 6. **Dashboard** (`/`) - 4 same-size tiles (identity + faction badge,
+- [x] 6. **Dashboard** (`/`) - 4 same-size tiles (identity + faction badge,
       credits, ship count, starting system with link to
       `/systems/:systemSymbol`, all from `Agent`), fleet preview mini-table
       (symbol/status/position — status as a readable-text badge, e.g.
