@@ -40,7 +40,7 @@ control panel over one agent's data at a time.
 
 ## Features
 
-In build order. **Fleet management (#10-#11) is the headline feature** — the
+In build order. **Fleet management (#11-#12) is the headline feature** — the
 richest data model (fuel, cargo, crew, components) and the clearest expression
 of the "control-room console" concept.
 
@@ -71,26 +71,30 @@ of the "control-room console" concept.
 8. **System detail** (`/systems/:systemSymbol`) - header + paginated
    waypoints table (type/trait badges; `MARKETPLACE` links to a market,
    `SHIPYARD` flagged).
-9. **Extract shared DataTable** (`shared/ui/DataTable`) - sort/search/
-   pagination logic pulled out of Systems list once Fleet list is its second
-   real consumer; Systems list migrated onto it, no behavior change.
-10. **Fleet list** (`/fleet`) - paginated table of ships: role, status badge,
+9. **Systems list: search by symbol** (`/systems`) - symbol search field +
+   "Explore" button next to the existing filter/sort controls; Zod-validated
+   exact system-symbol format (`SECTOR-SYSTEM`, case-insensitive), button
+   disabled until valid, redirects to the matching system's detail page.
+10. **Extract shared DataTable** (`shared/ui/DataTable`) - sort/search/
+    pagination logic pulled out of Systems list once Fleet list is its second
+    real consumer; Systems list migrated onto it, no behavior change.
+11. **Fleet list** (`/fleet`) - paginated table of ships: role, status badge,
     position, ETA (if `IN_TRANSIT`), cargo (units/capacity), fuel
     (current/capacity).
-11. **Fleet detail** (`/fleet/:shipSymbol`) - header (status, position, ETA,
+12. **Fleet detail** (`/fleet/:shipSymbol`) - header (status, position, ETA,
     fuel, cooldown); cargo table; crew; frame/reactor/engine/modules/mounts.
-12. **Market** (`/markets/:waypointSymbol`) - traded goods table (price,
+13. **Market** (`/markets/:waypointSymbol`) - traded goods table (price,
     volume, supply, activity); "limited info" state when `tradeGoods` is
     absent (only present when an agent ship is on the waypoint). Reached only
     by drill-down, no direct nav entry.
-13. **404 page** - catch-all route, "not found" + link to `/`.
-14. **Documentation (README)** - setup, run locally, stack. Per-feature docs
+14. **404 page** - catch-all route, "not found" + link to `/`.
+15. **Documentation (README)** - setup, run locally, stack. Per-feature docs
     are already produced by `/complete` archiving under `blueprint/history/`.
 
 ## Data model
 
 Server data is fetched and cached via TanStack Query, never duplicated into
-Pinia. `Ship`'s schema builds incrementally across features 6 → 10 → 11; other
+Pinia. `Ship`'s schema builds incrementally across features 6 → 11 → 12; other
 models are colocated with the single feature that introduces them.
 
 ### Agent
@@ -132,7 +136,7 @@ models are colocated with the single feature that introduces them.
 
 `GET /my/ships`, `GET /my/ships/:shipSymbol` —
 `features/fleet/api/ship.schema.ts`, introduced minimal in #6 (`symbol`,
-`status`, `waypointSymbol`), extended in #10, extended again in #11.
+`status`, `waypointSymbol`), extended in #11, extended again in #12.
 
 - `symbol` (string)
 - `registration.role` (string)
