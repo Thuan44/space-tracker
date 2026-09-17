@@ -5,6 +5,9 @@ export const systemSchema = z.object({
   name: z.string().optional(),
   sectorSymbol: z.string(),
   type: z.string(),
+  constellation: z.string(),
+  x: z.number(),
+  y: z.number(),
   waypoints: z.array(z.object({ symbol: z.string() })),
 })
 

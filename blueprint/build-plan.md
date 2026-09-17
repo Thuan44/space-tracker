@@ -130,7 +130,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       screens (System detail, Fleet list/detail, Market) reuse this same
       paginated-list shape without their own dedicated composable test.
 
-- [ ] 8. **System detail** (`/systems/:systemSymbol`) - header (symbol,
+- [x] 8. **System detail** (`/systems/:systemSymbol`) - header (symbol,
       name, sector, constellation, star type, x/y); waypoints table
       (`GET /systems/:systemSymbol/waypoints`, paginated separately from
       `System.waypoints`): symbol, type, trait badges as readable text
