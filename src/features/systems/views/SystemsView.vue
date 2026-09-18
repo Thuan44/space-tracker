@@ -46,6 +46,10 @@ const filteredRows = computed(() => {
 <template>
   <div class="p-8">
     <h2 class="text-[20px] font-semibold uppercase tracking-[0.06em] text-accent">Systems</h2>
+    <p class="mt-1 max-w-2xl text-[14px] text-muted">
+      Systems are clusters of waypoints — planets, moons, asteroid fields, gas giants, and stations —
+      grouped into sectors across the galaxy. The stars won't chart themselves — go stake your claim !
+    </p>
 
     <DataTable v-model:page="page" v-model:filter-text="filterText" :rows="filteredRows" data-key="symbol"
       :is-pending="isPending" :is-error="isError" error-message="Failed to load systems." :total="data?.meta.total ?? 0"

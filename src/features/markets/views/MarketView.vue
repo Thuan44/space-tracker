@@ -85,6 +85,11 @@ const filteredRows = computed(() => {
 
     <template v-else-if="market">
       <h2 class="mt-6 text-[28px] font-semibold tracking-[0.02em] text-accent">{{ market.symbol }}</h2>
+      <p class="mt-1 max-w-2xl text-[14px] text-muted">
+        Markets are trading posts found at select waypoints, listing the goods you can export, import,
+        or exchange here. Prices move with supply and activity — and with every deal your agents make. Buy low, sell
+        high — fortune favors the trader who watches the board !
+      </p>
 
       <div v-if="!hasTradeGoods"
         class="mt-6 rounded-md border border-warn/30 bg-warn/10 px-5 py-3 text-[13px] text-warn">

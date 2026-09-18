@@ -55,6 +55,10 @@ function eta(ship: Ship): string {
 <template>
   <div class="p-8">
     <h2 class="text-[20px] font-semibold uppercase tracking-[0.06em] text-accent">Fleet</h2>
+    <p class="mt-1 max-w-2xl text-[14px] text-muted">
+      Your fleet is every ship under your command — vessels that explore, trade, mine, and defend your interests across
+      known space. A fleet at rest earns nothing — keep them moving !
+    </p>
 
     <DataTable v-model:page="page" v-model:filter-text="filterText" :rows="filteredRows" data-key="symbol"
       :is-pending="isPending" :is-error="isError" error-message="Failed to load fleet." :total="data?.meta.total ?? 0"
