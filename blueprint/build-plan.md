@@ -157,7 +157,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       including mixed-case input normalizing to a match; button disabled
       state tied to validation.
 
-- [ ] 10. **Extract shared DataTable** (`shared/ui/DataTable`) - pull the
+- [x] 10. **Extract shared DataTable** (`shared/ui/DataTable`) - pull the
       sort/search/pagination logic out of the Systems list (#7) table into a
       shared component, informed by both Systems list's real usage and the
       Fleet list's spec'd needs (#11) as the second consumer. Migrate Systems
