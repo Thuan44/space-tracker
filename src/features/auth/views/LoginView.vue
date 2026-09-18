@@ -41,7 +41,7 @@ async function handleSubmit() {
           Enter your agent token
         </label>
         <input id="token" v-model="tokenInput" type="text" placeholder="Paste your token here" required
-          :disabled="pending"
+          :disabled="pending" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"
           class="mt-2 block w-full rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none disabled:opacity-60"
           @input="clearError" />
 

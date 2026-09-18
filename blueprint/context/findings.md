@@ -15,13 +15,13 @@
 **Suggested fix:** Wrap `response.json()` (and optionally the `fetch()` call) in a try/catch that logs and rethrows the same `Error('Request failed')`, mirroring the existing Zod-parse branch. Low priority since SpaceTraders' documented API always returns valid JSON on a 2xx response.
 **Resolution:**
 
-### F-02 [P2] open - Token field does not opt out of browser spellcheck and autofill
+### F-02 [P2] fixed - Token field does not opt out of browser spellcheck and autofill
 
 **File:** src/features/auth/views/LoginView.vue:43
 **Found:** 2026-09-16 by /audit (scope: current; lens: security)
 **Why it matters:** The project overview treats the agent token as "as sensitive as a password" and deliberately keeps it out of `localStorage` so it never outlives the browser session. The token is entered into a plain `type="text"` input with no `spellcheck="false"`, `autocomplete`, `autocorrect`, or `autocapitalize` opt-out. Browser features that read ordinary text fields therefore see the full credential: Chrome's Enhanced Spellcheck and Edge's MS Editor transmit non-password field contents to remote servers, and password managers or autofill heuristics may offer to retain the value. `@submit.prevent` blocks the classic form-history path, so this is an exposure gap rather than a confirmed leak, but the mitigation is one line of markup and the spec's "no masking is specced" note is about the visual `type`, not about these attributes.
 **Suggested fix:** Add `spellcheck="false"`, `autocomplete="off"` (or `autocomplete="one-time-code"`), `autocorrect="off"`, and `autocapitalize="off"` to the token input. This changes no behavior and keeps `type="text"` as the wireframe and spec require.
-**Resolution:**
+**Resolution:** Applied the suggested fix in `LoginView.vue:43`: added `spellcheck="false"`, `autocomplete="off"`, `autocorrect="off"`, and `autocapitalize="off"` to the token input. Verified with `npm run type-check` and `npx eslint`.
 
 ### F-03 [P3] open - Every submit failure is reported to the user as an invalid token
 
