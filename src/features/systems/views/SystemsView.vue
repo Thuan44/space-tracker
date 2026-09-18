@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import Column from 'primevue/column'
 import DataTable from '@/shared/ui/DataTable.vue'
+import CountUpNumber from '@/shared/ui/CountUpNumber.vue'
 import { useSystemsQuery } from '../composables/useSystemsQuery'
 import { toReadableText } from '@/shared/lib/spacetraders'
 import { symbolSchema } from '../lib/symbol.schema'
@@ -67,7 +68,11 @@ const filteredRows = computed(() => {
       <Column field="type" header="Star type" sortable>
         <template #body="{ data: row }">{{ toReadableText(row.type) }}</template>
       </Column>
-      <Column field="waypointCount" header="Waypoints" sortable />
+      <Column field="waypointCount" header="Waypoints" sortable>
+        <template #body="{ data: row }">
+          <CountUpNumber :value="row.waypointCount" />
+        </template>
+      </Column>
 
       <template #toolbar-end>
         <form class="flex gap-2" @submit.prevent="handleExplore">

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useQuery } from '@tanstack/vue-query'
 import { RouterLink } from 'vue-router'
-import ProgressBar from 'primevue/progressbar'
 import { User, Wallet, Send, MapMarker } from '@primeicons/vue'
 import { useAgentQuery } from '@/features/auth/composables/useAgentQuery'
 import { getShips } from '@/features/fleet/api/ship'
 import type { Ship } from '@/features/fleet/api/ship.schema'
 import { percentOf, systemSymbolFromWaypoint, toReadableText } from '@/shared/lib/spacetraders'
+import CountUpNumber from '@/shared/ui/CountUpNumber.vue'
+import GaugeBar from '@/shared/ui/GaugeBar.vue'
 import StatTile from '../components/StatTile.vue'
 
 function fuelPercent(ship: Ship): number {
@@ -62,13 +63,15 @@ const statusBadgeClasses: Record<Ship['nav']['status'], string> = {
       </StatTile>
 
       <StatTile label="Credits" :icon="Wallet">
-        <span class="truncate text-[2.5rem] leading-none font-semibold text-fg">{{
-          agent.credits.toLocaleString()
-          }}</span>
+        <CountUpNumber v-slot="{ value }" :value="agent.credits">
+          <span class="truncate text-[2.5rem] leading-none font-semibold text-fg">{{ value.toLocaleString() }}</span>
+        </CountUpNumber>
       </StatTile>
 
       <StatTile label="Ships" :icon="Send">
-        <span class="truncate text-[2.5rem] leading-none font-semibold text-fg">{{ agent.shipCount }}</span>
+        <CountUpNumber v-slot="{ value }" :value="agent.shipCount">
+          <span class="truncate text-[2.5rem] leading-none font-semibold text-fg">{{ value }}</span>
+        </CountUpNumber>
       </StatTile>
 
       <StatTile label="Starting system" :icon="MapMarker">
@@ -141,12 +144,7 @@ const statusBadgeClasses: Record<Ship['nav']['status'], string> = {
               </td>
               <td class="truncate px-4 text-base text-fg">{{ ship.nav.waypointSymbol }}</td>
               <td class="px-4 text-base">
-                <div class="flex items-center gap-2">
-                  <div class="h-2 min-w-0 flex-1">
-                    <ProgressBar :value="fuelPercent(ship)" :show-value="false" />
-                  </div>
-                  <span class="w-9 shrink-0 text-right text-[13px] text-muted">{{ fuelPercent(ship) }}%</span>
-                </div>
+                <GaugeBar :percent="fuelPercent(ship)" />
               </td>
             </tr>
           </tbody>

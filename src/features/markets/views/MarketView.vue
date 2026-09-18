@@ -7,6 +7,7 @@ import Column from 'primevue/column'
 import { getMarket } from '../api/market'
 import type { MarketTradeGood, TradeGoodInfo } from '../api/market.schema'
 import { systemSymbolFromWaypoint, toReadableText } from '@/shared/lib/spacetraders'
+import TypewriterText from '@/shared/ui/TypewriterText.vue'
 
 const route = useRoute()
 const waypointSymbol = route.params.waypointSymbol as string
@@ -84,7 +85,9 @@ const filteredRows = computed(() => {
     </div>
 
     <template v-else-if="market">
-      <h2 class="mt-6 text-[28px] font-semibold tracking-[0.02em] text-accent">{{ market.symbol }}</h2>
+      <h2 class="mt-6 text-[28px] font-semibold tracking-[0.02em] text-accent">
+        <TypewriterText :text="market.symbol" />
+      </h2>
       <p class="mt-1 max-w-2xl text-[14px] text-muted">
         Markets are trading posts found at select waypoints, listing the goods you can export, import,
         or exchange here. Prices move with supply and activity — and with every deal your agents make. Buy low, sell

@@ -8,6 +8,7 @@ import Paginator, { type PageState } from 'primevue/paginator'
 import { getSystem } from '../api/system'
 import { getWaypoints } from '../api/waypoint'
 import { toReadableText } from '@/shared/lib/spacetraders'
+import TypewriterText from '@/shared/ui/TypewriterText.vue'
 
 const route = useRoute()
 const systemSymbol = route.params.systemSymbol as string
@@ -100,7 +101,9 @@ function traitClasses(trait: string): string {
     </div>
 
     <template v-else-if="system">
-      <h2 class="mt-6 text-[28px] font-semibold tracking-[0.02em] text-accent">{{ system.symbol }}</h2>
+      <h2 class="mt-6 text-[28px] font-semibold tracking-[0.02em] text-accent">
+        <TypewriterText :text="system.symbol" />
+      </h2>
       <p v-if="system.name && system.name !== system.symbol" class="mt-1 text-[13px] text-muted">
         {{ system.name }}
       </p>

@@ -1,17 +1,22 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { SignOut } from '@primeicons/vue'
+import { SignOut, Sparkles } from '@primeicons/vue'
 import { useTokenStore } from '@/stores/token'
+import { useMotionStore } from '@/stores/motion'
 
 const route = useRoute()
 const router = useRouter()
 const tokenStore = useTokenStore()
+const motionStore = useMotionStore()
 
 const navItems = [
   { label: 'Dashboard', to: '/' },
   { label: 'Systems', to: '/systems' },
   { label: 'Fleet', to: '/fleet' },
 ]
+
+const motionToggleLabel = computed(() => (motionStore.reduced ? 'Enable motion' : 'Reduce motion'))
 
 function isActive(path: string) {
   return path === '/' ? route.path === '/' : route.path.startsWith(path)
@@ -38,9 +43,20 @@ function handleLogout() {
       </nav>
     </div>
 
-    <button type="button" aria-label="Log out" title="Log out"
-      class="cursor-pointer rounded-sm border border-line p-1.5 text-muted hover:text-fg" @click="handleLogout">
-      <SignOut class="size-4" />
-    </button>
+    <div class="flex items-center gap-2">
+      <button type="button" :aria-label="motionToggleLabel" :aria-pressed="!motionStore.reduced" :title="motionToggleLabel"
+        class="relative cursor-pointer rounded-sm border p-1.5 hover:text-fg"
+        :class="motionStore.reduced ? 'border-line text-muted' : 'border-accent/40 text-accent'"
+        @click="motionStore.toggle()">
+        <Sparkles class="size-4" />
+        <span v-if="motionStore.reduced" aria-hidden="true"
+          class="absolute inset-0 m-auto h-px w-4 rotate-45 bg-muted" />
+      </button>
+
+      <button type="button" aria-label="Log out" title="Log out"
+        class="cursor-pointer rounded-sm border border-line p-1.5 text-muted hover:text-fg" @click="handleLogout">
+        <SignOut class="size-4" />
+      </button>
+    </div>
   </header>
 </template>

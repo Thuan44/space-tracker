@@ -2,12 +2,13 @@
 import { computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { RouterLink, useRoute } from 'vue-router'
-import ProgressBar from 'primevue/progressbar'
 import { Users, Box, Wrench } from '@primeicons/vue'
 import { getShip } from '../api/ship'
 import type { Ship } from '../api/ship.schema'
 import { getWaypoint } from '@/features/systems/api/waypoint'
 import { percentOf, systemSymbolFromWaypoint, toReadableText } from '@/shared/lib/spacetraders'
+import TypewriterText from '@/shared/ui/TypewriterText.vue'
+import GaugeBar from '@/shared/ui/GaugeBar.vue'
 
 const route = useRoute()
 const shipSymbol = route.params.shipSymbol as string
@@ -70,7 +71,9 @@ function cooldownText(ship: Ship): string {
 
     <template v-else-if="ship">
       <div class="mt-6 flex items-center gap-4">
-        <h2 class="text-[28px] font-semibold tracking-[0.02em] text-accent">{{ ship.symbol }}</h2>
+        <h2 class="text-[28px] font-semibold tracking-[0.02em] text-accent">
+          <TypewriterText :text="ship.symbol" />
+        </h2>
         <span class="rounded-xs border px-2 py-0.5 text-[14px] font-semibold uppercase tracking-[0.09em]"
           :class="statusBadgeClasses[ship.nav.status]">
           {{ toReadableText(ship.nav.status) }}
@@ -95,11 +98,10 @@ function cooldownText(ship: Ship): string {
         </div>
         <div>
           <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Fuel</span>
-          <div class="mt-1 flex items-center gap-2">
-            <div class="h-2 w-24">
-              <ProgressBar :value="percentOf(ship.fuel.current, ship.fuel.capacity)" :show-value="false" />
-            </div>
-            <span class="text-[13px] text-muted">{{ ship.fuel.current }}/{{ ship.fuel.capacity }}</span>
+          <div class="mt-1">
+            <GaugeBar :percent="percentOf(ship.fuel.current, ship.fuel.capacity)" bar-width-class="w-24">
+              <span class="text-[13px] text-muted">{{ ship.fuel.current }}/{{ ship.fuel.capacity }}</span>
+            </GaugeBar>
           </div>
         </div>
         <div>
@@ -181,11 +183,12 @@ function cooldownText(ship: Ship): string {
             <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">{{
               component.label }}</span>
             <span class="mt-1 block text-[15px] font-semibold text-fg">{{ component.data.name }}</span>
-            <div class="mt-1 flex items-center gap-2">
-              <div class="h-2 w-24">
-                <ProgressBar :value="percentOf(component.data.condition, 1)" :show-value="false" />
-              </div>
-              <span class="text-[13px] text-muted">{{ percentOf(component.data.condition, 1) }}%</span>
+            <div class="mt-1">
+              <GaugeBar :percent="percentOf(component.data.condition, 1)" bar-width-class="w-24">
+                <template #default="{ percent }">
+                  <span class="text-[13px] text-muted">{{ percent }}%</span>
+                </template>
+              </GaugeBar>
             </div>
           </div>
         </div>

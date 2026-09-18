@@ -43,7 +43,7 @@ export const primeVueOptions: PrimeVueConfiguration & { license?: string } = {
       value: ({ props }: { props: ProgressBarProps }) => {
         const pct = props.value ?? 0
         return [
-          'h-full rounded-full transition-[width] duration-300',
+          'h-full rounded-full transition-[width] duration-500',
           pct >= 50 ? 'bg-accent' : pct >= 20 ? 'bg-warn' : 'bg-danger',
         ]
       },

@@ -3,8 +3,8 @@ import { computed, ref } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { RouterLink } from 'vue-router'
 import Column from 'primevue/column'
-import ProgressBar from 'primevue/progressbar'
 import DataTable from '@/shared/ui/DataTable.vue'
+import GaugeBar from '@/shared/ui/GaugeBar.vue'
 import { getShips } from '../api/ship'
 import type { Ship } from '../api/ship.schema'
 import { percentOf, toReadableText } from '@/shared/lib/spacetraders'
@@ -85,22 +85,12 @@ function eta(ship: Ship): string {
       </Column>
       <Column field="cargoPercent" header="Cargo" sortable>
         <template #body="{ data: row }">
-          <div class="flex items-center gap-2">
-            <div class="h-2 min-w-0 flex-1">
-              <ProgressBar :value="row.cargoPercent" :show-value="false" />
-            </div>
-            <span class="w-9 shrink-0 text-right text-[13px] text-muted">{{ row.cargoPercent }}%</span>
-          </div>
+          <GaugeBar :percent="row.cargoPercent" />
         </template>
       </Column>
       <Column field="fuelPercent" header="Fuel" sortable>
         <template #body="{ data: row }">
-          <div class="flex items-center gap-2">
-            <div class="h-2 min-w-0 flex-1">
-              <ProgressBar :value="row.fuelPercent" :show-value="false" />
-            </div>
-            <span class="w-9 shrink-0 text-right text-[13px] text-muted">{{ row.fuelPercent }}%</span>
-          </div>
+          <GaugeBar :percent="row.fuelPercent" />
         </template>
       </Column>
     </DataTable>
