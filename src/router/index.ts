@@ -6,6 +6,7 @@ import SystemDetailView from '@/features/systems/views/SystemDetailView.vue'
 import FleetView from '@/features/fleet/views/FleetView.vue'
 import FleetDetailView from '@/features/fleet/views/FleetDetailView.vue'
 import MarketView from '@/features/markets/views/MarketView.vue'
+import NotFoundView from '@/features/not-found/views/NotFoundView.vue'
 import { redirectIfAuthenticated, requireAuth } from './guards'
 
 const router = createRouter({
@@ -33,6 +34,7 @@ const router = createRouter({
       component: MarketView,
       beforeEnter: requireAuth,
     },
+    { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
   ],
 })
 

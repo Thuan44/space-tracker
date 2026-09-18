@@ -6,6 +6,6 @@ const route = useRoute()
 </script>
 
 <template>
-  <AppHeader v-if="route.name !== 'login'" />
+  <AppHeader v-if="route.name !== 'login' && route.name !== 'not-found'" />
   <RouterView />
 </template>

@@ -196,7 +196,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       everything at once). Loading/error states. Colocated schema:
       `features/markets/api/market.schema.ts`.
 
-- [ ] 14. **404 page** - catch-all Vue Router route
+- [x] 14. **404 page** - catch-all Vue Router route
       (`/:pathMatch(.*)*`), "page not found" message + link back to `/`.
       Distinct from the per-screen "error (retry)" states, which cover API
       call failures rather than a nonexistent route. No header/nav (same as
