@@ -5,6 +5,7 @@ import SystemsView from '@/features/systems/views/SystemsView.vue'
 import SystemDetailView from '@/features/systems/views/SystemDetailView.vue'
 import FleetView from '@/features/fleet/views/FleetView.vue'
 import FleetDetailView from '@/features/fleet/views/FleetDetailView.vue'
+import MarketView from '@/features/markets/views/MarketView.vue'
 import { redirectIfAuthenticated, requireAuth } from './guards'
 
 const router = createRouter({
@@ -24,6 +25,12 @@ const router = createRouter({
       path: '/fleet/:shipSymbol',
       name: 'fleet-detail',
       component: FleetDetailView,
+      beforeEnter: requireAuth,
+    },
+    {
+      path: '/markets/:waypointSymbol',
+      name: 'market',
+      component: MarketView,
       beforeEnter: requireAuth,
     },
   ],

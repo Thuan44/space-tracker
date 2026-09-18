@@ -186,7 +186,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       #11) with `crew`, `frame`, `reactor`, `engine`, `modules`, `mounts`,
       `cooldown`.
 
-- [ ] 13. **Market** (`/markets/:waypointSymbol`) - header (waypoint symbol,
+- [x] 13. **Market** (`/markets/:waypointSymbol`) - header (waypoint symbol,
       back link to parent system); traded goods table (name, type
       import/export/exchange, buy price, sell price, trade volume, supply,
       activity). Filter by name/type, sort by price/volume. "Limited info"
