@@ -210,6 +210,114 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       — written once the feature set above is stable enough to describe
       accurately.
 
+- [ ] 16. **Accessibility fixes** - `blueprint/specs/post-release-improvements.md`
+      step 1. `<html lang="">` → `lang="en"`; wrap `<RouterView />` in a
+      `<main>` landmark; promote each page's main title from `<h2>` to
+      `<h1>`; `aria-label` on filter fields and the "Explore system symbol"
+      field; `TypewriterText` exposes full text in an `sr-only` span
+      alongside the animated `aria-hidden` one; verify gauges expose a
+      `progressbar` role with accessible name; keyboard navigation and
+      focus order check; Lighthouse/axe audit before and after, score
+      recorded.
+
+- [ ] 17. **Prettier in CI, `--fix` local-only** - `blueprint/specs/post-release-improvements.md`
+      step 2 (closes F-05). Split `lint` into read-only `lint:oxlint` /
+      `lint:eslint` plus a separate `lint:fix`; add `format:check`; format
+      the existing 16 unformatted files in their own commit; add a
+      `format` CI job so a format failure shows separately from lint;
+      update the README scripts table and CI paragraph.
+
+- [ ] 18. **Remove AI Blueprint tooling from the repo, rewrite README** -
+      `blueprint/specs/post-release-improvements.md` step 3. Untrack
+      (not delete) `.agents/`, `.claude/skills/`, `AGENTS.md`, `CLAUDE.md`,
+      `blueprint/context/findings.md`; decide which remaining
+      `blueprint/` files are generated vs. real documentation to keep;
+      rewrite the README's AI-workflow section to stay honest without
+      referencing removed tooling/commands, add Architecture, Decisions,
+      and Tests sections, and make the PrimeVue license key explicitly
+      optional. Verify with a fresh clone that `npm ci`/`dev`/`build`
+      still work without `.claude/`/`.agents/`.
+
+- [ ] 19. **Lazy-load routes** - `blueprint/specs/post-release-improvements.md`
+      step 4 (closes F-04, also breaks the router↔http import cycle).
+      Convert every static view import in `src/router/index.ts` to
+      `component: () => import(...)`; confirm the single 800 kB chunk
+      splits into per-route chunks and the build's size warning clears;
+      re-run `http.router.test.ts` and a manual pass over every route.
+
+- [ ] 20. **Typed `ApiError` + `QueryClient` configuration** -
+      `blueprint/specs/post-release-improvements.md` step 5 (closes
+      F-01, F-03, F-08). New `ApiError` class with a `kind` discriminant
+      (`auth`/`not-found`/`rate-limit`/`client`/`server`/`network`/
+      `invalid-response`); `http.ts` maps fetch/status/JSON/Zod failures
+      onto it and drops its direct coupling to the router and token
+      store; new `plugins/vue-query.ts` with `shouldRetry`, backoff
+      `retryDelay`, and a `QueryCache` `onError` that logs out and
+      redirects on `auth`; `getErrorMessage(error, fallback)` for
+      per-kind UI text; `LoginView` uses it instead of one hardcoded
+      message.
+
+- [ ] 21. **Query `staleTime`, cache purge on logout, reactive query keys** -
+      `blueprint/specs/post-release-improvements.md` step 6. Named
+      `staleTime` constants per resource; query-key factories used
+      instead of duplicated key arrays; detail views derive their route
+      param as a `computed` so the query key reacts to navigating between
+      two instances of the same route; `keepPreviousData` on paginated
+      queries; a shared `logout(queryClient)` that cancels in-flight
+      queries, clears the cache, then clears the token store, called from
+      the header, the 401 handler, and on login; remove the
+      `enabled: !!system.value` cascade on the waypoints query.
+
+- [ ] 22. **Extract duplicated components, reuse `DataTable` everywhere** -
+      `blueprint/specs/post-release-improvements.md` step 7. Extract
+      `QueryErrorBanner`, `SkeletonBlock`, `FilterInput`,
+      `ShipStatusBadge`, `formatEta`, `Pill`, `DetailField`, `InfoPanel`,
+      `BackLink`, and `PageHeader`; extend `DataTable` to support
+      optional pagination, a custom item label, and a compact/no-filter
+      mode; migrate `SystemDetailView` and `MarketView` onto it and
+      decide `DashboardView`'s approach; add the missing text-size and
+      letter-spacing design tokens to `main.css` and replace the
+      arbitrary Tailwind values they replace.
+
+- [ ] 23. **Router: `meta.requiresAuth` guard** - `blueprint/specs/post-release-improvements.md`
+      point A. Replace the 7 repeated `beforeEnter` guards with a single
+      `router.beforeEach` driven by route meta, preserving the
+      `/login?redirect=…` destination. *Independent of the numbered
+      steps above — not a priority.*
+
+- [ ] 24. **Zod schema robustness for API enums** - `blueprint/specs/post-release-improvements.md`
+      point B. Loosen display-only enum fields (`ship.nav.status`,
+      `supply`, `activity`, waypoint/system `type`, ship `role`) so an
+      unknown value from the API degrades gracefully instead of failing
+      `safeParse()` for the whole list; keep strict validation only where
+      a field drives logic; also fix the `MarketView` O(n·m) `find`-in-
+      `map` by indexing trade goods into a `Map`. *Independent of the
+      numbered steps above — not a priority.*
+
+- [ ] 25. **Animation cleanup** - `blueprint/specs/post-release-improvements.md`
+      point C. Move `useCountUp` from a `setTimeout`/`Date.now()` loop to
+      `requestAnimationFrame` (matching `useGaugeReveal`), update its
+      tests, and limit `CountUpNumber` so it doesn't run 20 simultaneous
+      timers on the systems table. *Independent of the numbered steps
+      above — not a priority.*
+
+- [ ] 26. **Clarify filter/sort scope in the UI** - `blueprint/specs/post-release-improvements.md`
+      point D. The filter and sort intentionally only apply to the
+      currently loaded page, not the full dataset (decided 2026-09-17);
+      adjust the placeholder text or add a short note so this doesn't
+      read as a global search. *Independent of the numbered steps above
+      — not a priority.*
+
+- [ ] 27. **v2 scope candidates** - `blueprint/specs/post-release-improvements.md`
+      point E. Auto-refresh (`refetchInterval` while a ship is
+      `IN_TRANSIT`, ETA/cooldown countdowns); a waypoint detail page
+      (traits, orbitals, faction, market); a markets index (today a
+      market is only reachable via a waypoint badge); the first mutation
+      (`orbit`/`dock` via `useMutation` with cache invalidation), noting
+      the MVP was deliberately kept read-only (decided 2026-09-18).
+      *Independent of the numbered steps above — not a priority, deferred
+      to v2.*
+
 ## Out of scope for this build plan (v2+)
 
 See `project-plan.md` section 3 for the full list and rationale: real-time
