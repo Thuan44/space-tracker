@@ -47,13 +47,13 @@
 **Suggested fix:** Run `npm run format` and commit the result. `src/shared/api/http.ts` is also unformatted from an earlier feature and can be swept in the same pass.
 **Resolution:**
 
-### F-06 [P3] open - Vitest lint rules now apply to zero files
+### F-06 [P3] fixed - Vitest lint rules now apply to zero files
 
 **File:** eslint.config.ts:26
 **Found:** 2026-09-16 by /audit (scope: current; lens: tests)
-**Why it matters:** The `@vitest/eslint-plugin` recommended block is scoped to `files: ['src/**/__tests__/*']`, but this project colocates tests as `src/**/*.test.ts` per the Testing standard. Deleting `src/__tests__/App.spec.ts` in this feature removed the last file that glob could ever match, so rules such as `vitest/no-focused-tests` and `vitest/no-disabled-tests` are now silently inactive across the whole suite. A stray `it.only` would ship green through lint and CI while quietly skipping the rest of a file.
+**Why it matters:** The `@vitest/eslint-plugin` recommended block is scoped to `files: ['src/**/__tests__/*']`, but this project colocates tests as `src/**/*.test.ts` per the Testing standard. Deleting `src/__tests__/App.spec.ts` in this feature removed the last file that glob could ever match, so rules such as `vitest/no-focused-tests` and `vitest/no-disabled-tests` are now silently inactive across the whole suite. A stray `it.only` would ship green through lint and CI while quietly skipping the rest of a file. Same root cause as F-10 (the `tsconfig.vitest.json` project had the identical stale glob), just on the ESLint side instead of TypeScript's.
 **Suggested fix:** Change the glob to `['src/**/*.test.ts']` (or add it alongside the existing entry) so the vitest ruleset covers the convention the project actually uses.
-**Resolution:**
+**Resolution:** Applied the suggested fix in `eslint.config.ts:26`. Verified with `eslint --print-config src/shared/api/http.test.ts` that 24 `vitest/*` rules now resolve for a colocated test file (previously 0), and `npx eslint .` still passes clean across the project.
 
 ### F-08 [P3] open - The 401 clear-decision and the credential-selection use different falsiness rules, so an empty-string override wipes an untested token
 
@@ -70,3 +70,11 @@
 **Why it matters:** `vi.mock('@/router')` replaces the router with a bare `push` spy for the whole suite, so no test in the project can observe what the real router does with that push. That is exactly why F-07, a P1 that made the app unrecoverable for a session with an invalidated token, shipped green through `test:unit` and `type-check` in the first place. The repair restores the behavior but not the ability to see it: the two new tests at `src/shared/api/http.test.ts:73` and `:84` assert store state only, and `src/router/guards.test.ts` calls the guard as a plain function with no router. Deleting the `tokenStore.logout()` line, or later adding a second `beforeEnter` that reads the store, reintroduces the same bounce with a fully green suite. The spec defers routing-redirect tests to v2 on the grounds that they "need component mounting", but that premise does not hold here: this review drove the real `router`, store, and http modules together with only `fetch` stubbed and no component mounted, and the whole file ran in 8ms.
 **Suggested fix:** Add one focused test that imports the real `@/router` (no `vi.mock`) and asserts that a 401 on a store-token request settles `router.currentRoute.value.path` on `/login`. Keep it in its own file so the existing `http.test.ts` mock stays untouched. This is a test-only addition; the alternative is to accept the gap until feature 5 ships a logout control and feature 6 puts a real screen behind `/`, at which point the same pair becomes a visible bounce loop rather than a silent one.
 **Resolution:**
+
+### F-10 [P3] fixed - Vitest tsconfig project matched zero test files, so tests type-checked under the wrong (DOM-only) project
+
+**File:** tsconfig.vitest.json:6
+**Found:** 2026-09-18 by manual review (user-reported, outside /audit)
+**Why it matters:** `tsconfig.vitest.json`'s `include` was scoped to `src/**/__tests__/*`, and `tsconfig.app.json` only excluded that same path. This project colocates tests as `src/**/*.test.ts` per the Testing standard - the `src/__tests__/` folder has not existed since the Vite scaffold's default `App.spec.ts` was removed early on (same root cause as F-06, on the TypeScript project-references side instead of ESLint's). So the vitest tsconfig project matched zero files, and every `*.test.ts` file was instead picked up and type-checked under the app project, using its DOM-only `lib`/`types` from `@vue/tsconfig/tsconfig.dom.json` rather than the vitest project's `"types": ["node", "jsdom"]`. `vue-tsc --build` (the `type-check` script) passed silently either way, so nothing failed CI, but the intended Node/jsdom-specific typing for tests was never actually exercised.
+**Suggested fix:** Change `tsconfig.vitest.json`'s `include` to `["src/**/*.test.ts", "env.d.ts"]`, and add `"src/**/*.test.ts"` to `tsconfig.app.json`'s `exclude` alongside the now-dead `__tests__` entry, so each project matches the files it's meant to.
+**Resolution:** Applied the suggested fix. Verified with `npx vue-tsc -p tsconfig.vitest.json --listFilesOnly` that all 11 colocated `*.test.ts` files are now included in the vitest project, and `npm run type-check` still passes clean after clearing the incremental `.tsbuildinfo` cache.
