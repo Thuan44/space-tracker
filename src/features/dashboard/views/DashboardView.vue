@@ -35,7 +35,7 @@ const statusBadgeClasses: Record<Ship['nav']['status'], string> = {
 
 <template>
   <div class="p-8">
-    <h2 class="text-[20px] font-semibold uppercase tracking-[0.06em] text-accent">Agent</h2>
+    <h1 class="text-[20px] font-semibold uppercase tracking-[0.06em] text-accent">Agent</h1>
 
     <div v-if="isPending" class="mt-4 grid grid-cols-2 gap-6 lg:grid-cols-4">
       <div v-for="i in 4" :key="i" class="h-[124px] animate-pulse rounded-md border border-line bg-surface-1" />
@@ -144,7 +144,7 @@ const statusBadgeClasses: Record<Ship['nav']['status'], string> = {
               </td>
               <td class="truncate px-4 text-base text-fg">{{ ship.nav.waypointSymbol }}</td>
               <td class="px-4 text-base">
-                <GaugeBar :percent="fuelPercent(ship)" />
+                <GaugeBar :percent="fuelPercent(ship)" label="Fuel" />
               </td>
             </tr>
           </tbody>

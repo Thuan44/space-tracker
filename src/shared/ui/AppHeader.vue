@@ -35,7 +35,7 @@ function handleLogout() {
         Space Tracker
       </RouterLink>
 
-      <nav class="flex items-center gap-1">
+      <nav class="flex items-center gap-1" aria-label="Main navigation">
         <RouterLink v-for="item in navItems" :key="item.to" :to="item.to" class="rounded-sm px-3 py-1.5 text-base"
           :class="isActive(item.to) ? 'bg-surface-2 font-medium text-fg' : 'text-muted hover:text-fg'">
           {{ item.label }}

@@ -54,7 +54,7 @@ function eta(ship: Ship): string {
 
 <template>
   <div class="p-8">
-    <h2 class="text-[20px] font-semibold uppercase tracking-[0.06em] text-accent">Fleet</h2>
+    <h1 class="text-[20px] font-semibold uppercase tracking-[0.06em] text-accent">Fleet</h1>
     <p class="mt-1 max-w-2xl text-[14px] text-muted">
       Your fleet is every ship under your command — vessels that explore, trade, mine, and defend your interests across
       known space. A fleet at rest earns nothing — keep them moving !
@@ -85,12 +85,12 @@ function eta(ship: Ship): string {
       </Column>
       <Column field="cargoPercent" header="Cargo" sortable>
         <template #body="{ data: row }">
-          <GaugeBar :percent="row.cargoPercent" />
+          <GaugeBar :percent="row.cargoPercent" label="Cargo" />
         </template>
       </Column>
       <Column field="fuelPercent" header="Fuel" sortable>
         <template #body="{ data: row }">
-          <GaugeBar :percent="row.fuelPercent" />
+          <GaugeBar :percent="row.fuelPercent" label="Fuel" />
         </template>
       </Column>
     </DataTable>

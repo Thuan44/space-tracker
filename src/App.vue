@@ -7,5 +7,7 @@ const route = useRoute()
 
 <template>
   <AppHeader v-if="route.name !== 'login' && route.name !== 'not-found'" />
-  <RouterView />
+  <main>
+    <RouterView />
+  </main>
 </template>

@@ -85,9 +85,9 @@ const filteredRows = computed(() => {
     </div>
 
     <template v-else-if="market">
-      <h2 class="mt-6 text-[28px] font-semibold tracking-[0.02em] text-accent">
+      <h1 class="mt-6 text-[28px] font-semibold tracking-[0.02em] text-accent">
         <TypewriterText :text="market.symbol" />
-      </h2>
+      </h1>
       <p class="mt-1 max-w-2xl text-[14px] text-muted">
         Markets are trading posts found at select waypoints, listing the goods you can export, import,
         or exchange here. Prices move with supply and activity — and with every deal your agents make. Buy low, sell
@@ -101,6 +101,7 @@ const filteredRows = computed(() => {
       </div>
 
       <input v-model="filterText" type="text" placeholder="Filter by name or type"
+        aria-label="Filter by name or type"
         class="mt-6 block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none" />
 
       <PrimeDataTable :value="filteredRows" data-key="symbol" class="mt-4">

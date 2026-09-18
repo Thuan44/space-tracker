@@ -101,9 +101,9 @@ function traitClasses(trait: string): string {
     </div>
 
     <template v-else-if="system">
-      <h2 class="mt-6 text-[28px] font-semibold tracking-[0.02em] text-accent">
+      <h1 class="mt-6 text-[28px] font-semibold tracking-[0.02em] text-accent">
         <TypewriterText :text="system.symbol" />
-      </h2>
+      </h1>
       <p v-if="system.name && system.name !== system.symbol" class="mt-1 text-[13px] text-muted">
         {{ system.name }}
       </p>
@@ -129,9 +129,10 @@ function traitClasses(trait: string): string {
     </template>
 
     <div v-if="system" class="mt-6">
-      <h3 class="text-[13px] font-semibold uppercase tracking-[0.12em] text-fg">Waypoints</h3>
+      <h2 class="text-[13px] font-semibold uppercase tracking-[0.12em] text-fg">Waypoints</h2>
 
       <input v-model="waypointsFilterText" type="text" placeholder="Filter by symbol, type or trait"
+        aria-label="Filter by symbol, type or trait"
         class="mt-3 block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none" />
 
       <div v-if="waypointsPending" class="mt-4 h-96 animate-pulse rounded-md border border-line bg-surface-1" />

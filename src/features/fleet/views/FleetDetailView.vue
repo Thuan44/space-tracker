@@ -71,9 +71,9 @@ function cooldownText(ship: Ship): string {
 
     <template v-else-if="ship">
       <div class="mt-6 flex items-center gap-4">
-        <h2 class="text-[28px] font-semibold tracking-[0.02em] text-accent">
+        <h1 class="text-[28px] font-semibold tracking-[0.02em] text-accent">
           <TypewriterText :text="ship.symbol" />
-        </h2>
+        </h1>
         <span class="rounded-xs border px-2 py-0.5 text-[14px] font-semibold uppercase tracking-[0.09em]"
           :class="statusBadgeClasses[ship.nav.status]">
           {{ toReadableText(ship.nav.status) }}
@@ -99,7 +99,8 @@ function cooldownText(ship: Ship): string {
         <div>
           <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Fuel</span>
           <div class="mt-1">
-            <GaugeBar :percent="percentOf(ship.fuel.current, ship.fuel.capacity)" bar-width-class="w-24">
+            <GaugeBar :percent="percentOf(ship.fuel.current, ship.fuel.capacity)" bar-width-class="w-24"
+              label="Fuel">
               <span class="text-[13px] text-muted">{{ ship.fuel.current }}/{{ ship.fuel.capacity }}</span>
             </GaugeBar>
           </div>
@@ -113,7 +114,7 @@ function cooldownText(ship: Ship): string {
       <div class="mt-6 grid grid-cols-2 gap-6">
         <div class="rounded-md border border-line bg-surface-1 p-6">
           <div class="flex items-center justify-between">
-            <h3 class="text-[13px] font-semibold uppercase tracking-[0.12em] text-fg">Crew</h3>
+            <h2 class="text-[13px] font-semibold uppercase tracking-[0.12em] text-fg">Crew</h2>
             <Users class="size-4 text-muted" />
           </div>
 
@@ -141,9 +142,9 @@ function cooldownText(ship: Ship): string {
 
         <div class="rounded-md border border-line bg-surface-1 p-6">
           <div class="flex items-center justify-between">
-            <h3 class="text-[13px] font-semibold uppercase tracking-[0.12em] text-fg">
+            <h2 class="text-[13px] font-semibold uppercase tracking-[0.12em] text-fg">
               Cargo &middot; {{ ship.cargo.units }}/{{ ship.cargo.capacity }}
-            </h3>
+            </h2>
             <Box class="size-4 text-muted" />
           </div>
 
@@ -170,7 +171,7 @@ function cooldownText(ship: Ship): string {
 
       <div class="mt-6 rounded-md border border-line bg-surface-1 p-6">
         <div class="flex items-center justify-between">
-          <h3 class="text-[13px] font-semibold uppercase tracking-[0.12em] text-fg">Components</h3>
+          <h2 class="text-[13px] font-semibold uppercase tracking-[0.12em] text-fg">Components</h2>
           <Wrench class="size-4 text-muted" />
         </div>
 
@@ -184,7 +185,8 @@ function cooldownText(ship: Ship): string {
               component.label }}</span>
             <span class="mt-1 block text-[15px] font-semibold text-fg">{{ component.data.name }}</span>
             <div class="mt-1">
-              <GaugeBar :percent="percentOf(component.data.condition, 1)" bar-width-class="w-24">
+              <GaugeBar :percent="percentOf(component.data.condition, 1)" bar-width-class="w-24"
+                :label="`${component.label} condition`">
                 <template #default="{ percent }">
                   <span class="text-[13px] text-muted">{{ percent }}%</span>
                 </template>

@@ -210,7 +210,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       — written once the feature set above is stable enough to describe
       accurately.
 
-- [ ] 16. **Accessibility fixes** - `blueprint/specs/post-release-improvements.md`
+- [x] 16. **Accessibility fixes** - `blueprint/specs/post-release-improvements.md`
       step 1. `<html lang="">` → `lang="en"`; wrap `<RouterView />` in a
       `<main>` landmark; promote each page's main title from `<h2>` to
       `<h1>`; `aria-label` on filter fields and the "Explore system symbol"

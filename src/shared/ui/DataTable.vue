@@ -32,7 +32,7 @@ function onPage(event: PageState) {
     <div class="mt-4 flex flex-wrap items-start gap-4">
       <input :value="filterText"
         @input="emit('update:filterText', ($event.target as HTMLInputElement).value)" type="text"
-        :placeholder="filterPlaceholder"
+        :placeholder="filterPlaceholder" :aria-label="filterPlaceholder"
         class="block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none" />
       <slot name="toolbar-end" />
     </div>
