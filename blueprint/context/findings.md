@@ -63,13 +63,13 @@
 **Suggested fix:** Decide from the credential that was actually used, not from the option's truthiness: hoist the existing `const token = options?.token ?? tokenStore.token` decision into a single flag (for example `const usedStoreToken = options?.token === undefined`) and branch the `logout()` on that. No new machinery, one expression changed; no current requirement is lost.
 **Resolution:**
 
-### F-09 [P2] open - The 401 recovery path has no in-repo regression test, because every test mocks the router away
+### F-09 [P2] fixed - The 401 recovery path has no in-repo regression test, because every test mocks the router away
 
 **File:** src/shared/api/http.test.ts:7
 **Found:** 2026-09-16 by /audit (scope: current; lens: tests)
 **Why it matters:** `vi.mock('@/router')` replaces the router with a bare `push` spy for the whole suite, so no test in the project can observe what the real router does with that push. That is exactly why F-07, a P1 that made the app unrecoverable for a session with an invalidated token, shipped green through `test:unit` and `type-check` in the first place. The repair restores the behavior but not the ability to see it: the two new tests at `src/shared/api/http.test.ts:73` and `:84` assert store state only, and `src/router/guards.test.ts` calls the guard as a plain function with no router. Deleting the `tokenStore.logout()` line, or later adding a second `beforeEnter` that reads the store, reintroduces the same bounce with a fully green suite. The spec defers routing-redirect tests to v2 on the grounds that they "need component mounting", but that premise does not hold here: this review drove the real `router`, store, and http modules together with only `fetch` stubbed and no component mounted, and the whole file ran in 8ms.
 **Suggested fix:** Add one focused test that imports the real `@/router` (no `vi.mock`) and asserts that a 401 on a store-token request settles `router.currentRoute.value.path` on `/login`. Keep it in its own file so the existing `http.test.ts` mock stays untouched. This is a test-only addition; the alternative is to accept the gap until feature 5 ships a logout control and feature 6 puts a real screen behind `/`, at which point the same pair becomes a visible bounce loop rather than a silent one.
-**Resolution:**
+**Resolution:** Added `src/shared/api/http.router.test.ts`, importing the real `@/router` (no mock). It logs in with a store token, navigates to `/`, triggers a 401, and asserts `router.currentRoute.value.path` settles on `/login` via `vi.waitFor`. Sanity-checked that the test fails (lands back on `/` instead) when `tokenStore.logout()` is commented out, confirming it would have caught F-07. Full suite (58 tests), type-check, lint, and Prettier all pass.
 
 ### F-10 [P3] fixed - Vitest tsconfig project matched zero test files, so tests type-checked under the wrong (DOM-only) project
 
