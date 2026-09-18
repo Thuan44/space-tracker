@@ -26,7 +26,10 @@ async function fetchJson(url: string, options?: RequestOptions): Promise<unknown
         router.push('/login')
       }
     } else {
-      console.error(`Request to ${url} failed with status ${response.status}`, await response.text())
+      console.error(
+        `Request to ${url} failed with status ${response.status}`,
+        await response.text(),
+      )
     }
     throw new Error('Request failed')
   }

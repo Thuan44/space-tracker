@@ -298,8 +298,10 @@ Vue 3 + Vite + TypeScript project, using npm.
 - Preview production build: `npm run preview`
 - Type-check: `npm run type-check`
 - Test: `npm run test:unit` (Vitest)
-- Lint: `npm run lint` (oxlint, then ESLint; both run with `--fix` and rewrite files)
-- Format: `npm run format` (Prettier, `src/` only)
+- Lint: `npm run lint` (oxlint, then ESLint; read-only, CI-safe). Use
+  `npm run lint:fix` locally to auto-fix and rewrite files.
+- Format: `npm run format` (Prettier, `src/` only, rewrites files). Use
+  `npm run format:check` to verify without writing (CI-safe).
 
 A unit test runner (Vitest) is already configured, so tests are a gate for
 logic-bearing implementation steps. See the Testing section of

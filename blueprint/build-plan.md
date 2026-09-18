@@ -220,7 +220,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       focus order check; Lighthouse/axe audit before and after, score
       recorded.
 
-- [ ] 17. **Prettier in CI, `--fix` local-only** - `blueprint/specs/post-release-improvements.md`
+- [x] 17. **Prettier in CI, `--fix` local-only** - `blueprint/specs/post-release-improvements.md`
       step 2 (closes F-05). Split `lint` into read-only `lint:oxlint` /
       `lint:eslint` plus a separate `lint:fix`; add `format:check`; format
       the existing 16 unformatted files in their own commit; add a

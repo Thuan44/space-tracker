@@ -56,13 +56,23 @@ function eta(ship: Ship): string {
   <div class="p-8">
     <h1 class="text-[20px] font-semibold uppercase tracking-[0.06em] text-accent">Fleet</h1>
     <p class="mt-1 max-w-2xl text-[14px] text-muted">
-      Your fleet is every ship under your command — vessels that explore, trade, mine, and defend your interests across
-      known space. A fleet at rest earns nothing — keep them moving !
+      Your fleet is every ship under your command — vessels that explore, trade, mine, and defend
+      your interests across known space. A fleet at rest earns nothing — keep them moving !
     </p>
 
-    <DataTable v-model:page="page" v-model:filter-text="filterText" :rows="filteredRows" data-key="symbol"
-      :is-pending="isPending" :is-error="isError" error-message="Failed to load fleet." :total="data?.meta.total ?? 0"
-      :limit="data?.meta.limit ?? 1" filter-placeholder="Filter by symbol, role or status" @retry="() => refetch()">
+    <DataTable
+      v-model:page="page"
+      v-model:filter-text="filterText"
+      :rows="filteredRows"
+      data-key="symbol"
+      :is-pending="isPending"
+      :is-error="isError"
+      error-message="Failed to load fleet."
+      :total="data?.meta.total ?? 0"
+      :limit="data?.meta.limit ?? 1"
+      filter-placeholder="Filter by symbol, role or status"
+      @retry="() => refetch()"
+    >
       <Column field="symbol" header="Symbol" sortable>
         <template #body="{ data: row }">
           <RouterLink :to="`/fleet/${row.symbol}`" class="text-info hover:underline">
@@ -73,8 +83,10 @@ function eta(ship: Ship): string {
       <Column field="displayRole" header="Role" sortable />
       <Column field="displayStatus" header="Status" sortable>
         <template #body="{ data: row }">
-          <span class="rounded-xs border px-2 py-0.5 text-[14px] font-semibold uppercase tracking-[0.09em]"
-            :class="row.statusBadgeClass">
+          <span
+            class="rounded-xs border px-2 py-0.5 text-[14px] font-semibold uppercase tracking-[0.09em]"
+            :class="row.statusBadgeClass"
+          >
             {{ row.displayStatus }}
           </span>
         </template>

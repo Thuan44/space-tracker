@@ -70,16 +70,22 @@ close that gap but is out of scope for this project.
 | `npm run preview`    | Preview the production build locally        |
 | `npm run type-check` | Type-check with `vue-tsc`                   |
 | `npm run test:unit`  | Run unit tests with Vitest                  |
-| `npm run lint`       | Lint with oxlint then ESLint (both `--fix`) |
+| `npm run lint`       | Lint with oxlint then ESLint (read-only)    |
+| `npm run lint:fix`   | Lint with oxlint then ESLint, both `--fix`  |
 | `npm run format`     | Format `src/` with Prettier                 |
+| `npm run format:check` | Check `src/` formatting without writing   |
 
-GitLab CI runs `npm audit` (non-blocking) → lint → type-check → tests →
-build on every push to `main`, so every merge produces a visible pipeline
-run. `/complete` squash-merges locally and pushes directly, without opening
-a GitLab merge request, which is why the pipeline triggers on push rather
-than on merge-request events. A real-world project with a team would instead
-gate merge requests before they land on `main` — running on push here is a
-solo-project trade-off to keep every change visible without that overhead.
+GitLab CI runs `npm audit` (non-blocking) → lint + format check →
+type-check → tests → build on every push to `main`, so every merge produces
+a visible pipeline run. `lint` and `format` only verify in CI — they never
+rewrite files there, so a passing pipeline means the pushed code is actually
+clean; use `npm run lint:fix` / `npm run format` locally to fix issues before
+pushing. `/complete` squash-merges locally and pushes directly, without
+opening a GitLab merge request, which is why the pipeline triggers on push
+rather than on merge-request events. A real-world project with a team would
+instead gate merge requests before they land on `main` — running on push
+here is a solo-project trade-off to keep every change visible without that
+overhead.
 
 ## Tech stack
 

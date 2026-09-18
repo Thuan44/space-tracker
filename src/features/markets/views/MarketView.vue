@@ -67,19 +67,28 @@ const filteredRows = computed(() => {
 
 <template>
   <div class="p-8">
-    <RouterLink :to="`/systems/${systemSymbol}`"
-      class="text-[13px] font-semibold uppercase tracking-[0.09em] text-info hover:underline">
+    <RouterLink
+      :to="`/systems/${systemSymbol}`"
+      class="text-[13px] font-semibold uppercase tracking-[0.09em] text-info hover:underline"
+    >
       <span aria-hidden="true">&larr;</span> Back to system
     </RouterLink>
 
-    <div v-if="isPending" class="mt-6 h-28 animate-pulse rounded-md border border-line bg-surface-1" />
+    <div
+      v-if="isPending"
+      class="mt-6 h-28 animate-pulse rounded-md border border-line bg-surface-1"
+    />
 
-    <div v-else-if="isError"
-      class="mt-6 flex h-16 items-center justify-between rounded-md border border-danger/30 bg-danger/10 px-5">
+    <div
+      v-else-if="isError"
+      class="mt-6 flex h-16 items-center justify-between rounded-md border border-danger/30 bg-danger/10 px-5"
+    >
       <p class="text-[13px] text-danger">Failed to load market.</p>
-      <button type="button"
+      <button
+        type="button"
         class="h-8 cursor-pointer rounded-sm border border-line px-3 text-[13px] text-fg hover:bg-surface-2"
-        @click="() => refetch()">
+        @click="() => refetch()"
+      >
         Retry
       </button>
     </div>
@@ -89,20 +98,26 @@ const filteredRows = computed(() => {
         <TypewriterText :text="market.symbol" />
       </h1>
       <p class="mt-1 max-w-2xl text-[14px] text-muted">
-        Markets are trading posts found at select waypoints, listing the goods you can export, import,
-        or exchange here. Prices move with supply and activity — and with every deal your agents make. Buy low, sell
-        high — fortune favors the trader who watches the board !
+        Markets are trading posts found at select waypoints, listing the goods you can export,
+        import, or exchange here. Prices move with supply and activity — and with every deal your
+        agents make. Buy low, sell high — fortune favors the trader who watches the board !
       </p>
 
-      <div v-if="!hasTradeGoods"
-        class="mt-6 rounded-md border border-warn/30 bg-warn/10 px-5 py-3 text-[13px] text-warn">
+      <div
+        v-if="!hasTradeGoods"
+        class="mt-6 rounded-md border border-warn/30 bg-warn/10 px-5 py-3 text-[13px] text-warn"
+      >
         Limited market info: an agent ship must be present at this waypoint to see prices, volume,
         supply and activity.
       </div>
 
-      <input v-model="filterText" type="text" placeholder="Filter by name or type"
+      <input
+        v-model="filterText"
+        type="text"
+        placeholder="Filter by name or type"
         aria-label="Filter by name or type"
-        class="mt-6 block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none" />
+        class="mt-6 block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none"
+      />
 
       <PrimeDataTable :value="filteredRows" data-key="symbol" class="mt-4">
         <Column field="name" header="Name" />

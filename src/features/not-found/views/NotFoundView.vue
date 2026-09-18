@@ -8,8 +8,7 @@
       <h1 class="mt-2 text-2xl font-semibold uppercase tracking-[0.08em] text-fg">Lost in space</h1>
 
       <p class="mt-3 text-[14px] text-muted">
-        These coordinates don't lead anywhere. Even long-range sensors can't
-        find this waypoint.
+        These coordinates don't lead anywhere. Even long-range sensors can't find this waypoint.
       </p>
 
       <RouterLink to="/" class="mt-5 inline-block text-[13px] text-info hover:underline">

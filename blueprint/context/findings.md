@@ -39,13 +39,13 @@
 **Suggested fix:** Register routes with a lazy component (`component: () => import('@/features/auth/views/LoginView.vue')`), the Vue Router default for view modules. That breaks the cycle and keeps the route table free of view-side imports. No current requirement is lost.
 **Resolution:**
 
-### F-05 [P3] open - LoginView.vue is not formatted with the project's Prettier config
+### F-05 [P3] fixed - LoginView.vue is not formatted with the project's Prettier config
 
 **File:** src/features/auth/views/LoginView.vue:43
 **Found:** 2026-09-16 by /audit (scope: current; lens: quality)
 **Why it matters:** `npx prettier --check src/` reports `src/features/auth/views/LoginView.vue` as unformatted (the multi-attribute `<input>`, `<a>`, and `<button>` tags exceed the configured `printWidth: 100` and are wrapped by hand rather than by Prettier). `npm run format` is a declared project command, so the next person who runs it produces an unrelated diff on this file. ESLint will not catch it because `eslint-config-prettier` disables formatting rules, so nothing in CI guards this.
 **Suggested fix:** Run `npm run format` and commit the result. `src/shared/api/http.ts` is also unformatted from an earlier feature and can be swept in the same pass.
-**Resolution:**
+**Resolution:** Ran `npm run format`, which reformatted `LoginView.vue`, `http.ts`, and 14 other files (build-plan feature 17). Added `npm run format:check` and a corresponding `format` job in `.gitlab-ci.yml`'s `lint` stage so a future unformatted file fails CI instead of going unnoticed. Verified with `npm run format:check` (exits 0), `npm run type-check`, and `npm run test:unit` (66/66 passing).
 
 ### F-06 [P3] fixed - Vitest lint rules now apply to zero files
 

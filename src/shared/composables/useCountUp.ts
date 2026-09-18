@@ -33,7 +33,11 @@ export function useCountUp(target: Ref<number>, duration = DEFAULT_DURATION_MS) 
   })
 
   // Replay from 0 when motion is turned back on; snap immediately when turned off.
-  watch(() => motionStore.reduced, () => animate(0, target.value), { flush: 'sync' })
+  watch(
+    () => motionStore.reduced,
+    () => animate(0, target.value),
+    { flush: 'sync' },
+  )
 
   onUnmounted(() => {
     if (timer) clearTimeout(timer)

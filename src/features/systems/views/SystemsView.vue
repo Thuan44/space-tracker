@@ -39,7 +39,10 @@ const filteredRows = computed(() => {
   if (!needle) return rows.value
   return rows.value.filter(
     (row) =>
-      row.symbol.toLowerCase().includes(needle) || row.name?.toLowerCase().includes(needle) || row.sectorSymbol.toLowerCase().includes(needle) || row.type.toLowerCase().includes(needle),
+      row.symbol.toLowerCase().includes(needle) ||
+      row.name?.toLowerCase().includes(needle) ||
+      row.sectorSymbol.toLowerCase().includes(needle) ||
+      row.type.toLowerCase().includes(needle),
   )
 })
 </script>
@@ -48,14 +51,24 @@ const filteredRows = computed(() => {
   <div class="p-8">
     <h1 class="text-[20px] font-semibold uppercase tracking-[0.06em] text-accent">Systems</h1>
     <p class="mt-1 max-w-2xl text-[14px] text-muted">
-      Systems are clusters of waypoints — planets, moons, asteroid fields, gas giants, and stations —
-      grouped into sectors across the galaxy. The stars won't chart themselves — go stake your claim !
+      Systems are clusters of waypoints — planets, moons, asteroid fields, gas giants, and stations
+      — grouped into sectors across the galaxy. The stars won't chart themselves — go stake your
+      claim !
     </p>
 
-    <DataTable v-model:page="page" v-model:filter-text="filterText" :rows="filteredRows" data-key="symbol"
-      :is-pending="isPending" :is-error="isError" error-message="Failed to load systems." :total="data?.meta.total ?? 0"
-      :limit="data?.meta.limit ?? 1" filter-placeholder="Filter by symbol, name, sector or star type"
-      @retry="() => refetch()">
+    <DataTable
+      v-model:page="page"
+      v-model:filter-text="filterText"
+      :rows="filteredRows"
+      data-key="symbol"
+      :is-pending="isPending"
+      :is-error="isError"
+      error-message="Failed to load systems."
+      :total="data?.meta.total ?? 0"
+      :limit="data?.meta.limit ?? 1"
+      filter-placeholder="Filter by symbol, name, sector or star type"
+      @retry="() => refetch()"
+    >
       <Column field="symbol" header="Symbol" sortable>
         <template #body="{ data: row }">
           <RouterLink :to="`/systems/${row.symbol}`" class="text-info hover:underline">
@@ -76,11 +89,18 @@ const filteredRows = computed(() => {
 
       <template #toolbar-end>
         <form class="flex gap-2" @submit.prevent="handleExplore">
-          <input v-model="searchSymbol" type="text" placeholder="Explore system symbol, e.g. X1-DF55"
+          <input
+            v-model="searchSymbol"
+            type="text"
+            placeholder="Explore system symbol, e.g. X1-DF55"
             aria-label="Explore system symbol"
-            class="block w-96 rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none" />
-          <button type="submit" :disabled="!parsedSymbol.success"
-            class="flex h-10 w-fit shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-sm bg-accent px-4 text-[13px] font-semibold text-surface-0 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60">
+            class="block w-96 rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none"
+          />
+          <button
+            type="submit"
+            :disabled="!parsedSymbol.success"
+            class="flex h-10 w-fit shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-sm bg-accent px-4 text-[13px] font-semibold text-surface-0 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+          >
             Explore
           </button>
         </form>

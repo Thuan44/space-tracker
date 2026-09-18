@@ -83,19 +83,28 @@ function traitClasses(trait: string): string {
 
 <template>
   <div class="p-8">
-    <RouterLink to="/systems"
-      class="text-[13px] font-semibold uppercase tracking-[0.09em] text-info hover:underline">
+    <RouterLink
+      to="/systems"
+      class="text-[13px] font-semibold uppercase tracking-[0.09em] text-info hover:underline"
+    >
       <span aria-hidden="true">&larr;</span> Back to systems
     </RouterLink>
 
-    <div v-if="isPending" class="mt-6 h-28 animate-pulse rounded-md border border-line bg-surface-1" />
+    <div
+      v-if="isPending"
+      class="mt-6 h-28 animate-pulse rounded-md border border-line bg-surface-1"
+    />
 
-    <div v-else-if="isError"
-      class="mt-6 flex h-16 items-center justify-between rounded-md border border-danger/30 bg-danger/10 px-5">
+    <div
+      v-else-if="isError"
+      class="mt-6 flex h-16 items-center justify-between rounded-md border border-danger/30 bg-danger/10 px-5"
+    >
       <p class="text-[13px] text-danger">Failed to load system.</p>
-      <button type="button"
+      <button
+        type="button"
         class="h-8 cursor-pointer rounded-sm border border-line px-3 text-[13px] text-fg hover:bg-surface-2"
-        @click="() => refetch()">
+        @click="() => refetch()"
+      >
         Retry
       </button>
     </div>
@@ -110,20 +119,36 @@ function traitClasses(trait: string): string {
 
       <div class="mt-6 flex flex-wrap gap-x-10 gap-y-4 border-b border-line pb-6">
         <div>
-          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Sector</span>
-          <span class="mt-1 block text-[15px] font-semibold text-fg">{{ system.sectorSymbol }}</span>
+          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted"
+            >Sector</span
+          >
+          <span class="mt-1 block text-[15px] font-semibold text-fg">{{
+            system.sectorSymbol
+          }}</span>
         </div>
         <div>
-          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Constellation</span>
-          <span class="mt-1 block text-[15px] font-semibold text-fg">{{ system.constellation }}</span>
+          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted"
+            >Constellation</span
+          >
+          <span class="mt-1 block text-[15px] font-semibold text-fg">{{
+            system.constellation
+          }}</span>
         </div>
         <div>
-          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Star type</span>
-          <span class="mt-1 block text-[15px] font-semibold text-fg">{{ toReadableText(system.type) }}</span>
+          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted"
+            >Star type</span
+          >
+          <span class="mt-1 block text-[15px] font-semibold text-fg">{{
+            toReadableText(system.type)
+          }}</span>
         </div>
         <div>
-          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Coordinates</span>
-          <span class="mt-1 block text-[15px] font-semibold text-fg">{{ system.x }}, {{ system.y }}</span>
+          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted"
+            >Coordinates</span
+          >
+          <span class="mt-1 block text-[15px] font-semibold text-fg"
+            >{{ system.x }}, {{ system.y }}</span
+          >
         </div>
       </div>
     </template>
@@ -131,18 +156,29 @@ function traitClasses(trait: string): string {
     <div v-if="system" class="mt-6">
       <h2 class="text-[13px] font-semibold uppercase tracking-[0.12em] text-fg">Waypoints</h2>
 
-      <input v-model="waypointsFilterText" type="text" placeholder="Filter by symbol, type or trait"
+      <input
+        v-model="waypointsFilterText"
+        type="text"
+        placeholder="Filter by symbol, type or trait"
         aria-label="Filter by symbol, type or trait"
-        class="mt-3 block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none" />
+        class="mt-3 block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none"
+      />
 
-      <div v-if="waypointsPending" class="mt-4 h-96 animate-pulse rounded-md border border-line bg-surface-1" />
+      <div
+        v-if="waypointsPending"
+        class="mt-4 h-96 animate-pulse rounded-md border border-line bg-surface-1"
+      />
 
-      <div v-else-if="waypointsError"
-        class="mt-4 flex h-16 items-center justify-between rounded-md border border-danger/30 bg-danger/10 px-5">
+      <div
+        v-else-if="waypointsError"
+        class="mt-4 flex h-16 items-center justify-between rounded-md border border-danger/30 bg-danger/10 px-5"
+      >
         <p class="text-[13px] text-danger">Failed to load waypoints.</p>
-        <button type="button"
+        <button
+          type="button"
           class="h-8 cursor-pointer rounded-sm border border-line px-3 text-[13px] text-fg hover:bg-surface-2"
-          @click="() => refetchWaypoints()">
+          @click="() => refetchWaypoints()"
+        >
           Retry
         </button>
       </div>
@@ -160,14 +196,19 @@ function traitClasses(trait: string): string {
               <div v-if="row.traits.length === 0" class="text-[13px] text-muted">&mdash;</div>
               <div v-else class="flex flex-wrap gap-2">
                 <template v-for="trait in row.traits" :key="trait.symbol">
-                  <RouterLink v-if="trait.symbol === 'MARKETPLACE'" :to="`/markets/${row.symbol}`"
+                  <RouterLink
+                    v-if="trait.symbol === 'MARKETPLACE'"
+                    :to="`/markets/${row.symbol}`"
                     class="rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.09em]"
-                    :class="traitClasses(trait.symbol)">
+                    :class="traitClasses(trait.symbol)"
+                  >
                     {{ trait.name }}
                   </RouterLink>
-                  <span v-else
+                  <span
+                    v-else
                     class="rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.09em]"
-                    :class="traitClasses(trait.symbol)">
+                    :class="traitClasses(trait.symbol)"
+                  >
                     {{ trait.name }}
                   </span>
                 </template>
@@ -176,13 +217,18 @@ function traitClasses(trait: string): string {
           </Column>
         </DataTable>
 
-        <Paginator :rows="waypointsData.meta.limit" :total-records="waypointsData.meta.total"
+        <Paginator
+          :rows="waypointsData.meta.limit"
+          :total-records="waypointsData.meta.total"
           :first="(waypointsPage - 1) * waypointsData.meta.limit"
-          template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink" class="mt-4"
-          @page="onWaypointsPage">
+          template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+          class="mt-4"
+          @page="onWaypointsPage"
+        >
           <template #start>
             <span class="text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
-              Page {{ waypointsPage }} of {{ totalWaypointsPages }} &middot; {{ waypointsData.meta.total }} waypoints
+              Page {{ waypointsPage }} of {{ totalWaypointsPages }} &middot;
+              {{ waypointsData.meta.total }} waypoints
             </span>
           </template>
         </Paginator>

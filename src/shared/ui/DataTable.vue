@@ -30,21 +30,32 @@ function onPage(event: PageState) {
 <template>
   <div>
     <div class="mt-4 flex flex-wrap items-start gap-4">
-      <input :value="filterText"
-        @input="emit('update:filterText', ($event.target as HTMLInputElement).value)" type="text"
-        :placeholder="filterPlaceholder" :aria-label="filterPlaceholder"
-        class="block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none" />
+      <input
+        :value="filterText"
+        @input="emit('update:filterText', ($event.target as HTMLInputElement).value)"
+        type="text"
+        :placeholder="filterPlaceholder"
+        :aria-label="filterPlaceholder"
+        class="block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none"
+      />
       <slot name="toolbar-end" />
     </div>
 
-    <div v-if="isPending" class="mt-4 h-96 animate-pulse rounded-md border border-line bg-surface-1" />
+    <div
+      v-if="isPending"
+      class="mt-4 h-96 animate-pulse rounded-md border border-line bg-surface-1"
+    />
 
-    <div v-else-if="isError"
-      class="mt-4 flex h-16 items-center justify-between rounded-md border border-danger/30 bg-danger/10 px-5">
+    <div
+      v-else-if="isError"
+      class="mt-4 flex h-16 items-center justify-between rounded-md border border-danger/30 bg-danger/10 px-5"
+    >
       <p class="text-[13px] text-danger">{{ errorMessage }}</p>
-      <button type="button"
+      <button
+        type="button"
         class="h-8 cursor-pointer rounded-sm border border-line px-3 text-[13px] text-fg hover:bg-surface-2"
-        @click="emit('retry')">
+        @click="emit('retry')"
+      >
         Retry
       </button>
     </div>
@@ -54,8 +65,14 @@ function onPage(event: PageState) {
         <slot />
       </PrimeDataTable>
 
-      <Paginator :rows="limit" :total-records="total" :first="(page - 1) * limit"
-        template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink" class="mt-4" @page="onPage">
+      <Paginator
+        :rows="limit"
+        :total-records="total"
+        :first="(page - 1) * limit"
+        template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+        class="mt-4"
+        @page="onPage"
+      >
         <template #start>
           <span class="text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
             Page {{ page }} of {{ getTotalPages(total, limit) }}
