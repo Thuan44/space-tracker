@@ -128,7 +128,11 @@ const statusBadgeClasses: Record<Ship['nav']['status'], string> = {
             </tr>
             <tr v-for="ship in shipsPage.data" :key="ship.symbol"
               class="h-12 border-b border-line last:border-0 hover:bg-surface-2">
-              <td class="truncate px-4 text-base text-fg">{{ ship.symbol }}</td>
+              <td class="truncate px-4 text-base text-fg">
+                <RouterLink :to="`/fleet/${ship.symbol}`" class="text-info hover:underline">
+                  {{ ship.symbol }}
+                </RouterLink>
+              </td>
               <td class="px-4 text-base">
                 <span class="rounded-xs border px-2 py-0.5 text-[14px] font-semibold uppercase tracking-[0.09em]"
                   :class="statusBadgeClasses[ship.nav.status]">

@@ -175,7 +175,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       Extends `features/fleet/api/ship.schema.ts` (introduced in #6) with
       `role`, `cargo`, `fuel`, `route.arrival`.
 
-- [ ] 12. **Fleet detail** (`/fleet/:shipSymbol`) - header (symbol, role,
+- [x] 12. **Fleet detail** (`/fleet/:shipSymbol`) - header (symbol, role,
       status as a readable-text badge, current position — link to
       `/markets/:waypointSymbol` if that waypoint has a market, ETA if
       IN_TRANSIT, fuel level, cooldown); cargo table (item/quantity vs.
