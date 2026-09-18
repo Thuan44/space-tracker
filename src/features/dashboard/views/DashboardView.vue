@@ -6,11 +6,11 @@ import { User, Wallet, Send, MapMarker } from '@primeicons/vue'
 import { useAgentQuery } from '@/features/auth/composables/useAgentQuery'
 import { getShips } from '@/features/fleet/api/ship'
 import type { Ship } from '@/features/fleet/api/ship.schema'
-import { systemSymbolFromWaypoint, toReadableText } from '@/shared/lib/spacetraders'
+import { percentOf, systemSymbolFromWaypoint, toReadableText } from '@/shared/lib/spacetraders'
 import StatTile from '../components/StatTile.vue'
 
 function fuelPercent(ship: Ship): number {
-  return ship.fuel.capacity > 0 ? Math.round((ship.fuel.current / ship.fuel.capacity) * 100) : 0
+  return percentOf(ship.fuel.current, ship.fuel.capacity)
 }
 
 const { data: agent, isPending, isError, refetch } = useAgentQuery()

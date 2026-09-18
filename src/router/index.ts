@@ -3,6 +3,7 @@ import LoginView from '@/features/auth/views/LoginView.vue'
 import DashboardView from '@/features/dashboard/views/DashboardView.vue'
 import SystemsView from '@/features/systems/views/SystemsView.vue'
 import SystemDetailView from '@/features/systems/views/SystemDetailView.vue'
+import FleetView from '@/features/fleet/views/FleetView.vue'
 import { redirectIfAuthenticated, requireAuth } from './guards'
 
 const router = createRouter({
@@ -17,6 +18,7 @@ const router = createRouter({
       component: SystemDetailView,
       beforeEnter: requireAuth,
     },
+    { path: '/fleet', name: 'fleet', component: FleetView, beforeEnter: requireAuth },
   ],
 })
 

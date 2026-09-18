@@ -166,7 +166,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       `specs-techniques.md`: no component designed ahead of time, extracted
       only once a second real need is known ("2e occurrence").
 
-- [ ] 11. **Fleet list** (`/fleet`) - `GET /my/ships`, built on
+- [x] 11. **Fleet list** (`/fleet`) - `GET /my/ships`, built on
       `shared/ui/DataTable` (#10): symbol (link to detail), role, status as a
       readable-text badge (IN_ORBIT/DOCKED/IN_TRANSIT), current position,
       ETA (if IN_TRANSIT), cargo (units/capacity), fuel (current/capacity).
