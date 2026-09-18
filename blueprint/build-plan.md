@@ -202,7 +202,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       call failures rather than a nonexistent route. No header/nav (same as
       `/login`).
 
-- [ ] 15. **Documentation (README)** - required deliverable per `brief.md`
+- [x] 15. **Documentation (README)** - required deliverable per `brief.md`
       ("Documentation claire") and `todo.md` ("Qualité"): general README
       covering setup, running locally, and the stack. Per-feature/fix
       documentation is already produced by `/complete` archiving each item
