@@ -257,7 +257,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       per-kind UI text; `LoginView` uses it instead of one hardcoded
       message.
 
-- [ ] 21. **Query `staleTime`, cache purge on logout, reactive query keys** -
+- [x] 21. **Query `staleTime`, cache purge on logout, reactive query keys** -
       `blueprint/specs/post-release-improvements.md` step 6. Named
       `staleTime` constants per resource; query-key factories used
       instead of duplicated key arrays; detail views derive their route

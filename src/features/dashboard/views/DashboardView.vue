@@ -3,9 +3,10 @@ import { useQuery } from '@tanstack/vue-query'
 import { RouterLink } from 'vue-router'
 import { User, Wallet, Send, MapMarker } from '@primeicons/vue'
 import { useAgentQuery } from '@/features/auth/composables/useAgentQuery'
-import { getShips } from '@/features/fleet/api/ship'
+import { getShips, shipKeys } from '@/features/fleet/api/ship'
 import type { Ship } from '@/features/fleet/api/ship.schema'
 import { percentOf, systemSymbolFromWaypoint, toReadableText } from '@/shared/lib/spacetraders'
+import { STALE_TIME } from '@/shared/api/query-config'
 import CountUpNumber from '@/shared/ui/CountUpNumber.vue'
 import GaugeBar from '@/shared/ui/GaugeBar.vue'
 import StatTile from '../components/StatTile.vue'
@@ -22,8 +23,9 @@ const {
   isError: shipsError,
   refetch: refetchShips,
 } = useQuery({
-  queryKey: ['ships', 'preview'],
+  queryKey: shipKeys.preview(),
   queryFn: () => getShips({ limit: 5 }),
+  staleTime: STALE_TIME.ships,
 })
 
 const statusBadgeClasses: Record<Ship['nav']['status'], string> = {

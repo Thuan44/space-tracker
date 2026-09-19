@@ -7,6 +7,7 @@ import { queryClient, shouldRetry, retryDelay } from './vue-query'
 import { request } from '@/shared/api/http'
 import { useTokenStore } from '@/stores/token'
 import { ApiError } from '@/shared/api/api-error'
+import { STALE_TIME } from '@/shared/api/query-config'
 import router from '@/router'
 
 describe('shouldRetry', () => {
@@ -51,6 +52,12 @@ describe('retryDelay', () => {
       expect(retryDelay(failureCount, error)).toBe(expected)
     },
   )
+})
+
+describe('queryClient: default options', () => {
+  it('sets the default staleTime to STALE_TIME.default', () => {
+    expect(queryClient.getDefaultOptions().queries?.staleTime).toBe(STALE_TIME.default)
+  })
 })
 
 describe('queryClient: 401 handling via the real QueryCache', () => {

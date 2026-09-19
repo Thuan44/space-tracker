@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useQuery } from '@tanstack/vue-query'
+import { keepPreviousData, useQuery } from '@tanstack/vue-query'
 import { RouterLink, useRoute } from 'vue-router'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Paginator, { type PageState } from 'primevue/paginator'
-import { getSystem } from '../api/system'
-import { getWaypoints } from '../api/waypoint'
+import { getSystem, systemKeys } from '../api/system'
+import { getWaypoints, waypointKeys } from '../api/waypoint'
 import { toReadableText } from '@/shared/lib/spacetraders'
+import { STALE_TIME } from '@/shared/api/query-config'
 import TypewriterText from '@/shared/ui/TypewriterText.vue'
 
 const route = useRoute()
-const systemSymbol = route.params.systemSymbol as string
+const systemSymbol = computed(() => route.params.systemSymbol as string)
 
 const {
   data: system,
@@ -19,8 +20,9 @@ const {
   isError,
   refetch,
 } = useQuery({
-  queryKey: ['system', systemSymbol],
-  queryFn: () => getSystem(systemSymbol),
+  queryKey: systemKeys.detail(systemSymbol),
+  queryFn: () => getSystem(systemSymbol.value),
+  staleTime: STALE_TIME.systems,
 })
 
 const waypointsPage = ref(1)
@@ -29,12 +31,14 @@ const waypointsFilterText = ref('')
 const {
   data: waypointsData,
   isPending: waypointsPending,
+  isFetching: waypointsFetching,
   isError: waypointsError,
   refetch: refetchWaypoints,
 } = useQuery({
-  queryKey: ['waypoints', systemSymbol, waypointsPage],
-  queryFn: () => getWaypoints(systemSymbol, { page: waypointsPage.value }),
-  enabled: computed(() => !!system.value),
+  queryKey: waypointKeys.list(systemSymbol, waypointsPage),
+  queryFn: () => getWaypoints(systemSymbol.value, { page: waypointsPage.value }),
+  staleTime: STALE_TIME.waypoints,
+  placeholderData: keepPreviousData,
 })
 
 const waypointRows = computed(
@@ -184,7 +188,12 @@ function traitClasses(trait: string): string {
       </div>
 
       <template v-else-if="waypointsData">
-        <DataTable :value="filteredWaypointRows" data-key="symbol" class="mt-4">
+        <DataTable
+          :value="filteredWaypointRows"
+          data-key="symbol"
+          class="mt-4 transition-opacity"
+          :class="{ 'opacity-60': waypointsFetching }"
+        >
           <Column field="symbol" header="Symbol" sortable>
             <template #body="{ data: row }">{{ row.symbol }}</template>
           </Column>

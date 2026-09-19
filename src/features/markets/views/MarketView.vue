@@ -4,14 +4,15 @@ import { useQuery } from '@tanstack/vue-query'
 import { RouterLink, useRoute } from 'vue-router'
 import PrimeDataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import { getMarket } from '../api/market'
+import { getMarket, marketKeys } from '../api/market'
 import type { MarketTradeGood, TradeGoodInfo } from '../api/market.schema'
 import { systemSymbolFromWaypoint, toReadableText } from '@/shared/lib/spacetraders'
+import { STALE_TIME } from '@/shared/api/query-config'
 import TypewriterText from '@/shared/ui/TypewriterText.vue'
 
 const route = useRoute()
-const waypointSymbol = route.params.waypointSymbol as string
-const systemSymbol = systemSymbolFromWaypoint(waypointSymbol)
+const waypointSymbol = computed(() => route.params.waypointSymbol as string)
+const systemSymbol = computed(() => systemSymbolFromWaypoint(waypointSymbol.value))
 
 const {
   data: market,
@@ -19,8 +20,9 @@ const {
   isError,
   refetch,
 } = useQuery({
-  queryKey: ['market', waypointSymbol],
-  queryFn: () => getMarket(systemSymbol, waypointSymbol),
+  queryKey: marketKeys.detail(waypointSymbol),
+  queryFn: () => getMarket(systemSymbol.value, waypointSymbol.value),
+  staleTime: STALE_TIME.market,
 })
 
 const filterText = ref('')

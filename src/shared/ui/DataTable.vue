@@ -3,18 +3,22 @@ import PrimeDataTable from 'primevue/datatable'
 import Paginator, { type PageState } from 'primevue/paginator'
 import { getTotalPages } from '@/shared/lib/pagination'
 
-defineProps<{
-  rows: T[]
-  dataKey: string
-  isPending: boolean
-  isError: boolean
-  errorMessage: string
-  total: number
-  limit: number
-  page: number
-  filterText: string
-  filterPlaceholder: string
-}>()
+withDefaults(
+  defineProps<{
+    rows: T[]
+    dataKey: string
+    isPending: boolean
+    isFetching?: boolean
+    isError: boolean
+    errorMessage: string
+    total: number
+    limit: number
+    page: number
+    filterText: string
+    filterPlaceholder: string
+  }>(),
+  { isFetching: false },
+)
 
 const emit = defineEmits<{
   'update:page': [page: number]
@@ -61,7 +65,12 @@ function onPage(event: PageState) {
     </div>
 
     <template v-else>
-      <PrimeDataTable :value="rows" :data-key="dataKey" class="mt-4">
+      <PrimeDataTable
+        :value="rows"
+        :data-key="dataKey"
+        class="mt-4 transition-opacity"
+        :class="{ 'opacity-60': isFetching }"
+      >
         <slot />
       </PrimeDataTable>
 

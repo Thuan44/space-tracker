@@ -3,15 +3,16 @@ import { computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { RouterLink, useRoute } from 'vue-router'
 import { Users, Box, Wrench } from '@primeicons/vue'
-import { getShip } from '../api/ship'
+import { getShip, shipKeys } from '../api/ship'
 import type { Ship } from '../api/ship.schema'
-import { getWaypoint } from '@/features/systems/api/waypoint'
+import { getWaypoint, waypointKeys } from '@/features/systems/api/waypoint'
 import { percentOf, systemSymbolFromWaypoint, toReadableText } from '@/shared/lib/spacetraders'
+import { STALE_TIME } from '@/shared/api/query-config'
 import TypewriterText from '@/shared/ui/TypewriterText.vue'
 import GaugeBar from '@/shared/ui/GaugeBar.vue'
 
 const route = useRoute()
-const shipSymbol = route.params.shipSymbol as string
+const shipSymbol = computed(() => route.params.shipSymbol as string)
 
 const {
   data: ship,
@@ -19,18 +20,21 @@ const {
   isError,
   refetch,
 } = useQuery({
-  queryKey: ['ship', shipSymbol],
-  queryFn: () => getShip(shipSymbol),
+  queryKey: shipKeys.detail(shipSymbol),
+  queryFn: () => getShip(shipSymbol.value),
+  staleTime: STALE_TIME.ships,
 })
 
+const waypointSymbol = computed(() => ship.value?.nav.waypointSymbol)
+const waypointSystemSymbol = computed(() =>
+  waypointSymbol.value ? systemSymbolFromWaypoint(waypointSymbol.value) : undefined,
+)
+
 const { data: waypoint } = useQuery({
-  queryKey: ['waypoint-for-ship', shipSymbol],
-  queryFn: () =>
-    getWaypoint(
-      systemSymbolFromWaypoint(ship.value!.nav.waypointSymbol),
-      ship.value!.nav.waypointSymbol,
-    ),
-  enabled: computed(() => !!ship.value),
+  queryKey: waypointKeys.detail(waypointSystemSymbol, waypointSymbol),
+  queryFn: () => getWaypoint(waypointSystemSymbol.value!, waypointSymbol.value!),
+  enabled: computed(() => !!waypointSymbol.value),
+  staleTime: STALE_TIME.waypoints,
 })
 
 const hasMarket = computed(

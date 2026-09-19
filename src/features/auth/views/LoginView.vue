@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQueryClient } from '@tanstack/vue-query'
 import { useTokenStore } from '@/stores/token'
 import { getAgent } from '@/features/auth/api/agent'
 import { getErrorMessage } from '@/shared/lib/error-message'
@@ -9,6 +10,7 @@ const DEFAULT_ERROR_MESSAGE = 'Invalid token. Please check and try again.'
 
 const router = useRouter()
 const tokenStore = useTokenStore()
+const queryClient = useQueryClient()
 
 const tokenInput = ref('')
 const pending = ref(false)
@@ -24,6 +26,7 @@ async function handleSubmit() {
 
   try {
     await getAgent({ token: tokenInput.value })
+    queryClient.clear()
     tokenStore.login(tokenInput.value)
     router.push('/')
   } catch (err) {

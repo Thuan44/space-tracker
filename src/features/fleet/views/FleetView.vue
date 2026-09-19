@@ -1,20 +1,23 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useQuery } from '@tanstack/vue-query'
+import { keepPreviousData, useQuery } from '@tanstack/vue-query'
 import { RouterLink } from 'vue-router'
 import Column from 'primevue/column'
 import DataTable from '@/shared/ui/DataTable.vue'
 import GaugeBar from '@/shared/ui/GaugeBar.vue'
-import { getShips } from '../api/ship'
+import { getShips, shipKeys } from '../api/ship'
 import type { Ship } from '../api/ship.schema'
 import { percentOf, toReadableText } from '@/shared/lib/spacetraders'
+import { STALE_TIME } from '@/shared/api/query-config'
 
 const page = ref(1)
 const filterText = ref('')
 
-const { data, isPending, isError, refetch } = useQuery({
-  queryKey: ['ships', page],
+const { data, isPending, isFetching, isError, refetch } = useQuery({
+  queryKey: shipKeys.list(page),
   queryFn: () => getShips({ page: page.value }),
+  staleTime: STALE_TIME.ships,
+  placeholderData: keepPreviousData,
 })
 
 const statusBadgeClasses: Record<Ship['nav']['status'], string> = {
@@ -66,6 +69,7 @@ function eta(ship: Ship): string {
       :rows="filteredRows"
       data-key="symbol"
       :is-pending="isPending"
+      :is-fetching="isFetching"
       :is-error="isError"
       error-message="Failed to load fleet."
       :total="data?.meta.total ?? 0"

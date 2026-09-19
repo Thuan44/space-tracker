@@ -23,7 +23,7 @@ function handleExplore() {
   router.push(`/systems/${parsedSymbol.value.data}`)
 }
 
-const { data, isPending, isError, refetch } = useSystemsQuery(page)
+const { data, isPending, isFetching, isError, refetch } = useSystemsQuery(page)
 
 const rows = computed(
   () =>
@@ -62,6 +62,7 @@ const filteredRows = computed(() => {
       :rows="filteredRows"
       data-key="symbol"
       :is-pending="isPending"
+      :is-fetching="isFetching"
       :is-error="isError"
       error-message="Failed to load systems."
       :total="data?.meta.total ?? 0"

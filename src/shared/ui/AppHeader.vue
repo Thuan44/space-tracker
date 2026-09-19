@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useQueryClient } from '@tanstack/vue-query'
 import { SignOut, Sparkles } from '@primeicons/vue'
-import { useTokenStore } from '@/stores/token'
 import { useMotionStore } from '@/stores/motion'
+import { logout } from '@/features/auth/lib/logout'
 
 const route = useRoute()
 const router = useRouter()
-const tokenStore = useTokenStore()
+const queryClient = useQueryClient()
 const motionStore = useMotionStore()
 
 const navItems = [
@@ -22,8 +23,8 @@ function isActive(path: string) {
   return path === '/' ? route.path === '/' : route.path.startsWith(path)
 }
 
-function handleLogout() {
-  tokenStore.logout()
+async function handleLogout() {
+  await logout(queryClient)
   router.push('/login')
 }
 </script>

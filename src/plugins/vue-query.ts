@@ -1,7 +1,8 @@
 import { QueryCache, QueryClient } from '@tanstack/vue-query'
 import router from '@/router'
-import { useTokenStore } from '@/stores/token'
 import { ApiError } from '@/shared/api/api-error'
+import { STALE_TIME } from '@/shared/api/query-config'
+import { logout } from '@/features/auth/lib/logout'
 
 const MAX_RETRIES = 3
 const BASE_DELAY_MS = 1000
@@ -16,7 +17,11 @@ export function shouldRetry(failureCount: number, error: unknown): boolean {
 }
 
 export function retryDelay(failureCount: number, error: unknown): number {
-  if (error instanceof ApiError && error.kind === 'rate-limit' && error.retryAfterMs !== undefined) {
+  if (
+    error instanceof ApiError &&
+    error.kind === 'rate-limit' &&
+    error.retryAfterMs !== undefined
+  ) {
     return error.retryAfterMs
   }
   return Math.min(BASE_DELAY_MS * 2 ** failureCount, MAX_DELAY_MS)
@@ -27,13 +32,13 @@ export const queryClient = new QueryClient({
     queries: {
       retry: shouldRetry,
       retryDelay,
+      staleTime: STALE_TIME.default,
     },
   },
   queryCache: new QueryCache({
     onError(error) {
       if (error instanceof ApiError && error.kind === 'auth') {
-        useTokenStore().logout()
-        router.push('/login')
+        logout(queryClient).then(() => router.push('/login'))
       }
     },
   }),
