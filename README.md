@@ -40,10 +40,11 @@ cp .env.example .env
 
 - `VITE_API_BASE_URL` - the SpaceTraders API base URL
   (`https://api.spacetraders.io/v2`)
-- `VITE_PRIMEUI_LICENCE_KEY` - a PrimeVue community license key, generated at
-  [primeui.dev/licenses](https://primeui.dev/licenses) (sign in, create a free
-  community license, copy the generated key). It only silences PrimeVue's
-  unlicensed-usage badge in the running app — no paid features are used.
+- `VITE_PRIMEUI_LICENCE_KEY` - **optional**. A PrimeVue community license key,
+  generated at [primeui.dev/licenses](https://primeui.dev/licenses) (sign in,
+  create a free community license, copy the generated key). It only silences
+  PrimeVue's unlicensed-usage badge in the running app - no paid features are
+  used, and everything works without it.
 
 `.env` is gitignored; never commit real secrets to `.env.example`.
 
@@ -80,12 +81,11 @@ type-check → tests → build on every push to `main`, so every merge produces
 a visible pipeline run. `lint` and `format` only verify in CI — they never
 rewrite files there, so a passing pipeline means the pushed code is actually
 clean; use `npm run lint:fix` / `npm run format` locally to fix issues before
-pushing. `/complete` squash-merges locally and pushes directly, without
-opening a GitLab merge request, which is why the pipeline triggers on push
-rather than on merge-request events. A real-world project with a team would
-instead gate merge requests before they land on `main` — running on push
-here is a solo-project trade-off to keep every change visible without that
-overhead.
+pushing. Changes land on `main` with a direct `git push`, without opening a
+GitLab merge request, which is why the pipeline triggers on push rather than
+on merge-request events. A real-world project with a team would instead gate
+merge requests before they land on `main` — running on push here is a
+solo-project trade-off to keep every change visible without that overhead.
 
 ## Tech stack
 
@@ -113,19 +113,73 @@ contracts or shipyard purchases, faction management, or real-time
 notifications. A mobile-optimized layout is also out of scope — the
 data-dense tables need a dedicated redesign, not just breakpoints.
 
+## Architecture
+
+Code is organized by domain under `src/features/` (`auth`, `dashboard`,
+`systems`, `fleet`, `markets`, `not-found`); each domain has a `views/`
+folder and, when it fetches data or has logic worth sharing, its own `api/`
+and/or `composables/`. `src/shared/` holds cross-cutting UI components,
+composables, utilities, and the API client used across domains.
+
+Data flows one way, view to server:
+
+```
+view (.vue) → useQuery → api/*.ts → shared/api/http.ts → Zod schema
+```
+
+A view calls TanStack Query's `useQuery` directly, or through a small domain
+composable when one exists (e.g. `useSystemsQuery`, `useAgentQuery`) — either
+way, the query function is a domain `api/*.ts` function. That function calls
+`shared/api/http.ts`'s `request`/`requestPage`, which fetches from the
+SpaceTraders API and validates the JSON response against a Zod schema before
+it ever reaches a component — an invalid or unexpected shape throws rather
+than flowing further.
+
+State is split by kind, not by convenience: **Pinia** (`src/stores/`) holds
+client-only state — currently just the agent token/session — and never
+server data; **TanStack Query** owns all server data (fleet, systems,
+markets), including its fetching, caching, and loading/error states.
+
+Auth is a single choke point in `shared/api/http.ts`: every request attaches
+the stored token as a `Bearer` header, and a `401` response clears the token
+store and redirects to `/login` (`src/router/guards.ts` handles the reverse
+case — an authenticated visit to `/login` redirects away). There is no
+separate auth service; any API call can trigger this path.
+
+## Decisions
+
+- **Zod at the API boundary** - the SpaceTraders API is external and
+  unversioned from this project's point of view; validating every response
+  against a Zod schema turns a silent shape mismatch into a thrown error at
+  the one place it's easy to trace, instead of a `TypeError` deep in a
+  component.
+- **TanStack Query for server state** - fetching, caching, and loading/error
+  state for fleet/systems/market data are TanStack Query's job, so components
+  and Pinia stores don't reimplement request de-duplication or cache
+  invalidation.
+- **`sessionStorage` for the token** - the token is treated as sensitive as a
+  password. `sessionStorage` clears itself when the tab closes, unlike
+  `localStorage`, which would outlive the session; it's still visible in
+  DevTools, an accepted risk for a backend-less SPA.
+- **PrimeVue unstyled + Tailwind** - PrimeVue supplies interaction logic
+  (sortable/paginated tables, keyboard accessibility) while Tailwind drives
+  100% of the visuals, avoiding a fight between two styling systems.
+
+## Tests
+
+Unit tests use **Vitest** and are colocated next to the code they cover as
+`*.test.ts` (e.g. `src/shared/api/http.test.ts`). Coverage is pure logic:
+schemas, composables, and utilities — no component mounting.
+
+```sh
+npm run test:unit
+```
+
 ## Built with an AI workflow
 
-This project was built with the support of an AI coding agent, following an
-AI workflow called **AI Blueprint** to keep that work spec-first and
-reviewable rather than one long open-ended prompting session.
-
-`AGENTS.md` / `CLAUDE.md` tell the agent how the project wants to be worked
-on, and `blueprint/` holds the planning docs (`project-overview.md`,
-`build-plan.md`) alongside the state the workflow generates as it goes
-(`current-feature.md`, `findings.md`, `review.md`). Each build-plan item goes
-through the same loop: `/feature` turns it into a spec and stops for review,
-`/implement` builds it step by step against that spec, `/check` and `/audit`
-verify the behavior and the code, and `/complete` archives the finished spec
-under `blueprint/history/` and merges it. That history is why every feature
-and fix in this repo has its own written record of what changed and why, not
-just a commit message.
+This project was built with the support of an AI coding agent, using a
+spec-first workflow: each feature was turned into a written spec, reviewed,
+implemented step by step against that spec, and verified before moving on.
+Every feature and fix in this repo's history has its own written record of
+what changed and why, archived under `blueprint/history/`, not just a commit
+message.

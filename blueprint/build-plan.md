@@ -227,7 +227,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       `format` CI job so a format failure shows separately from lint;
       update the README scripts table and CI paragraph.
 
-- [ ] 18. **Remove AI Blueprint tooling from the repo, rewrite README** -
+- [x] 18. **Remove AI Blueprint tooling from the repo, rewrite README** -
       `blueprint/specs/post-release-improvements.md` step 3. Untrack
       (not delete) `.agents/`, `.claude/skills/`, `AGENTS.md`, `CLAUDE.md`,
       `blueprint/context/findings.md`; decide which remaining

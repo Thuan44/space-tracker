@@ -4,7 +4,7 @@ import type { ProgressBarProps } from 'primevue/progressbar'
 
 // `license` is read at runtime by @primevue/core but missing from PrimeVueConfiguration's types.
 export const primeVueOptions: PrimeVueConfiguration & { license?: string } = {
-  license: import.meta.env.VITE_PRIMEUI_LICENCE_KEY,
+  license: import.meta.env.VITE_PRIMEUI_LICENCE_KEY || undefined,
   unstyled: true,
   pt: {
     datatable: {
