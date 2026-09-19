@@ -131,20 +131,30 @@ A view calls TanStack Query's `useQuery` directly, or through a small domain
 composable when one exists (e.g. `useSystemsQuery`, `useAgentQuery`) — either
 way, the query function is a domain `api/*.ts` function. That function calls
 `shared/api/http.ts`'s `request`/`requestPage`, which fetches from the
-SpaceTraders API and validates the JSON response against a Zod schema before
-it ever reaches a component — an invalid or unexpected shape throws rather
-than flowing further.
+SpaceTraders API, validates the JSON response against a Zod schema, and
+throws a typed `ApiError` (`shared/api/api-error.ts`) rather than a generic
+`Error` for any failure — a rejected `fetch`, a non-2xx status, a malformed
+body, or a schema mismatch each get their own `kind`
+(`auth`/`not-found`/`rate-limit`/`client`/`server`/`network`/`invalid-response`),
+so callers can tell them apart instead of catching one opaque message.
+`shared/lib/error-message.ts`'s `getErrorMessage(error, fallback)` turns that
+`kind` into user-facing copy (used today by `LoginView`).
 
 State is split by kind, not by convenience: **Pinia** (`src/stores/`) holds
 client-only state — currently just the agent token/session — and never
 server data; **TanStack Query** owns all server data (fleet, systems,
 markets), including its fetching, caching, and loading/error states.
 
-Auth is a single choke point in `shared/api/http.ts`: every request attaches
-the stored token as a `Bearer` header, and a `401` response clears the token
-store and redirects to `/login` (`src/router/guards.ts` handles the reverse
-case — an authenticated visit to `/login` redirects away). There is no
-separate auth service; any API call can trigger this path.
+Auth is a single choke point, but it no longer lives in `http.ts`: the
+`QueryClient` configured in `plugins/vue-query.ts` retries a query only for
+the `ApiError` kinds where retrying can help (`network`, `server`,
+`rate-limit`, with backoff that respects a 429's `Retry-After` header), and
+its `QueryCache` logs out and redirects to `/login` whenever any query fails
+with kind `auth` (`src/router/guards.ts` handles the reverse case — an
+authenticated visit to `/login` redirects away). `http.ts` itself only
+attaches the stored token as a `Bearer` header and maps failures to
+`ApiError`; it has no router or store-logout dependency. There is no
+separate auth service; any query can trigger this path.
 
 ## Decisions
 

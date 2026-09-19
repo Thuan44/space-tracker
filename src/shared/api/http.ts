@@ -1,10 +1,24 @@
 import { z } from 'zod'
-import router from '@/router'
 import { useTokenStore } from '@/stores/token'
+import { ApiError, type ApiErrorKind } from './api-error'
 
 export interface RequestOptions {
   token?: string
-  skipAuthRedirect?: boolean
+}
+
+function statusToKind(status: number): ApiErrorKind {
+  if (status === 401) return 'auth'
+  if (status === 404) return 'not-found'
+  if (status === 429) return 'rate-limit'
+  if (status >= 400 && status < 500) return 'client'
+  return 'server'
+}
+
+function retryAfterMsFromHeader(response: Response): number | undefined {
+  const header = response.headers.get('Retry-After')
+  if (!header) return undefined
+  const seconds = Number(header)
+  return Number.isNaN(seconds) ? undefined : seconds * 1000
 }
 
 async function fetchJson(url: string, options?: RequestOptions): Promise<unknown> {
@@ -15,26 +29,30 @@ async function fetchJson(url: string, options?: RequestOptions): Promise<unknown
     headers.Authorization = `Bearer ${token}`
   }
 
-  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${url}`, { headers })
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      if (!options?.token) {
-        tokenStore.logout()
-      }
-      if (!options?.skipAuthRedirect) {
-        router.push('/login')
-      }
-    } else {
-      console.error(
-        `Request to ${url} failed with status ${response.status}`,
-        await response.text(),
-      )
-    }
-    throw new Error('Request failed')
+  let response: Response
+  try {
+    response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${url}`, { headers })
+  } catch {
+    throw new ApiError('network', null, 'Network request failed')
   }
 
-  return response.json()
+  if (!response.ok) {
+    const kind = statusToKind(response.status)
+    const retryAfterMs = kind === 'rate-limit' ? retryAfterMsFromHeader(response) : undefined
+    console.error(`Request to ${url} failed with status ${response.status}`, await response.text())
+    throw new ApiError(
+      kind,
+      response.status,
+      `Request failed with status ${response.status}`,
+      retryAfterMs,
+    )
+  }
+
+  try {
+    return await response.json()
+  } catch {
+    throw new ApiError('invalid-response', response.status, 'Response body was not valid JSON')
+  }
 }
 
 export async function request<T>(
@@ -47,7 +65,7 @@ export async function request<T>(
 
   if (!result.success) {
     console.error(result.error.format())
-    throw new Error('Request failed')
+    throw new ApiError('invalid-response', null, 'Response failed schema validation')
   }
 
   return result.data.data
@@ -79,7 +97,7 @@ export async function requestPage<T>(
 
   if (!result.success) {
     console.error(result.error.format())
-    throw new Error('Request failed')
+    throw new ApiError('invalid-response', null, 'Response failed schema validation')
   }
 
   return result.data

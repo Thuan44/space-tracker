@@ -3,6 +3,9 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTokenStore } from '@/stores/token'
 import { getAgent } from '@/features/auth/api/agent'
+import { getErrorMessage } from '@/shared/lib/error-message'
+
+const DEFAULT_ERROR_MESSAGE = 'Invalid token. Please check and try again.'
 
 const router = useRouter()
 const tokenStore = useTokenStore()
@@ -20,11 +23,11 @@ async function handleSubmit() {
   error.value = null
 
   try {
-    await getAgent({ token: tokenInput.value, skipAuthRedirect: true })
+    await getAgent({ token: tokenInput.value })
     tokenStore.login(tokenInput.value)
     router.push('/')
-  } catch {
-    error.value = 'Invalid token. Please check and try again.'
+  } catch (err) {
+    error.value = getErrorMessage(err, DEFAULT_ERROR_MESSAGE)
   } finally {
     pending.value = false
   }

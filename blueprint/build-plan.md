@@ -245,7 +245,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       splits into per-route chunks and the build's size warning clears;
       re-run `http.router.test.ts` and a manual pass over every route.
 
-- [ ] 20. **Typed `ApiError` + `QueryClient` configuration** -
+- [x] 20. **Typed `ApiError` + `QueryClient` configuration** -
       `blueprint/specs/post-release-improvements.md` step 5 (closes
       F-01, F-03, F-08). New `ApiError` class with a `kind` discriminant
       (`auth`/`not-found`/`rate-limit`/`client`/`server`/`network`/

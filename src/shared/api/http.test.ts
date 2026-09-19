@@ -4,20 +4,25 @@ import { z } from 'zod'
 import { request, requestPage } from './http'
 import { useTokenStore } from '@/stores/token'
 
-vi.mock('@/router', () => ({
-  default: { push: vi.fn<(to: string) => void>() },
-}))
-
-import router from '@/router'
-
 const schema = z.object({ symbol: z.string() })
 
-function jsonResponse(status: number, body: unknown) {
+function jsonResponse(status: number, body: unknown, headers: Record<string, string> = {}) {
   return {
     ok: status >= 200 && status < 300,
     status,
+    headers: new Headers(headers),
     json: () => Promise.resolve(body),
     text: () => Promise.resolve(JSON.stringify(body)),
+  } as Response
+}
+
+function invalidJsonResponse(status: number) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    headers: new Headers(),
+    json: () => Promise.reject(new SyntaxError('Unexpected end of JSON input')),
+    text: () => Promise.resolve('not json'),
   } as Response
 }
 
@@ -26,7 +31,6 @@ describe('request', () => {
     sessionStorage.clear()
     setActivePinia(createPinia())
     vi.stubGlobal('fetch', vi.fn())
-    vi.mocked(router.push).mockClear()
     vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
@@ -62,47 +66,6 @@ describe('request', () => {
     expect(fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ headers: {} }))
   })
 
-  it('redirects to /login on 401 and throws', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(401, {}))
-
-    await expect(request('/my/agent', schema)).rejects.toThrow('Request failed')
-
-    expect(router.push).toHaveBeenCalledWith('/login')
-  })
-
-  it('clears the stored token on a 401 when the store token was used', async () => {
-    const tokenStore = useTokenStore()
-    tokenStore.login('store-token')
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(401, {}))
-
-    await expect(request('/my/agent', schema)).rejects.toThrow('Request failed')
-
-    expect(tokenStore.token).toBeNull()
-    expect(sessionStorage.getItem('token')).toBeNull()
-  })
-
-  it('does not clear the stored token on a 401 for an explicit token override', async () => {
-    const tokenStore = useTokenStore()
-    tokenStore.login('store-token')
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(401, {}))
-
-    await expect(
-      request('/my/agent', schema, { token: 'override-token', skipAuthRedirect: true }),
-    ).rejects.toThrow('Request failed')
-
-    expect(tokenStore.token).toBe('store-token')
-  })
-
-  it('does not redirect on 401 when skipAuthRedirect is set', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(401, {}))
-
-    await expect(request('/my/agent', schema, { skipAuthRedirect: true })).rejects.toThrow(
-      'Request failed',
-    )
-
-    expect(router.push).not.toHaveBeenCalled()
-  })
-
   it('returns the parsed data on a successful response', async () => {
     vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { data: { symbol: 'AGENT' } }))
 
@@ -111,21 +74,63 @@ describe('request', () => {
     expect(result).toEqual({ symbol: 'AGENT' })
   })
 
-  it('logs and throws on a failed schema parse', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { data: { symbol: 42 } }))
+  it('throws an ApiError with kind "network" when fetch itself rejects', async () => {
+    vi.mocked(fetch).mockRejectedValue(new TypeError('Failed to fetch'))
 
-    await expect(request('/my/agent', schema)).rejects.toThrow('Request failed')
+    await expect(request('/my/agent', schema)).rejects.toMatchObject({
+      kind: 'network',
+      status: null,
+    })
+  })
 
+  it('throws an ApiError with kind "invalid-response" when a 2xx body is not valid JSON', async () => {
+    vi.mocked(fetch).mockResolvedValue(invalidJsonResponse(200))
+
+    await expect(request('/my/agent', schema)).rejects.toMatchObject({
+      kind: 'invalid-response',
+      status: 200,
+    })
+  })
+
+  it.each([
+    [401, 'auth'],
+    [404, 'not-found'],
+    [400, 'client'],
+    [500, 'server'],
+  ] as const)('maps a %i response to ApiError kind "%s"', async (status, kind) => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(status, {}))
+
+    await expect(request('/my/agent', schema)).rejects.toMatchObject({ kind, status })
     expect(console.error).toHaveBeenCalled()
   })
 
-  it('logs and throws on a non-401 error response', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(500, { error: 'boom' }))
+  it('throws an ApiError with kind "rate-limit", status 429, and retryAfterMs from the header', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(429, {}, { 'Retry-After': '2' }))
 
-    await expect(request('/my/agent', schema)).rejects.toThrow('Request failed')
+    await expect(request('/my/agent', schema)).rejects.toMatchObject({
+      kind: 'rate-limit',
+      status: 429,
+      retryAfterMs: 2000,
+    })
+  })
+
+  it('leaves retryAfterMs undefined when the 429 has no Retry-After header', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(429, {}))
+
+    await expect(request('/my/agent', schema)).rejects.toMatchObject({
+      kind: 'rate-limit',
+      retryAfterMs: undefined,
+    })
+  })
+
+  it('throws an ApiError with kind "invalid-response" on a failed schema parse', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { data: { symbol: 42 } }))
+
+    await expect(request('/my/agent', schema)).rejects.toMatchObject({
+      kind: 'invalid-response',
+    })
 
     expect(console.error).toHaveBeenCalled()
-    expect(router.push).not.toHaveBeenCalled()
   })
 })
 
@@ -134,7 +139,6 @@ describe('requestPage', () => {
     sessionStorage.clear()
     setActivePinia(createPinia())
     vi.stubGlobal('fetch', vi.fn())
-    vi.mocked(router.push).mockClear()
     vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
@@ -171,21 +175,24 @@ describe('requestPage', () => {
     expect(result).toEqual({ data: [{ symbol: 'A' }], meta: { total: 1, page: 1, limit: 20 } })
   })
 
-  it('logs and throws when an item fails schema validation', async () => {
+  it('throws an ApiError with kind "invalid-response" when an item fails schema validation', async () => {
     vi.mocked(fetch).mockResolvedValue(
       jsonResponse(200, { data: [{ symbol: 42 }], meta: { total: 1, page: 1, limit: 20 } }),
     )
 
-    await expect(requestPage('/systems', schema)).rejects.toThrow('Request failed')
+    await expect(requestPage('/systems', schema)).rejects.toMatchObject({
+      kind: 'invalid-response',
+    })
 
     expect(console.error).toHaveBeenCalled()
   })
 
-  it('still redirects to /login on a 401', async () => {
+  it('throws an ApiError with kind "auth" on a 401', async () => {
     vi.mocked(fetch).mockResolvedValue(jsonResponse(401, {}))
 
-    await expect(requestPage('/systems', schema)).rejects.toThrow('Request failed')
-
-    expect(router.push).toHaveBeenCalledWith('/login')
+    await expect(requestPage('/systems', schema)).rejects.toMatchObject({
+      kind: 'auth',
+      status: 401,
+    })
   })
 })
