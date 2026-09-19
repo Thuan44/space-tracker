@@ -238,7 +238,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       optional. Verify with a fresh clone that `npm ci`/`dev`/`build`
       still work without `.claude/`/`.agents/`.
 
-- [ ] 19. **Lazy-load routes** - `blueprint/specs/post-release-improvements.md`
+- [x] 19. **Lazy-load routes** - `blueprint/specs/post-release-improvements.md`
       step 4 (closes F-04, also breaks the router↔http import cycle).
       Convert every static view import in `src/router/index.ts` to
       `component: () => import(...)`; confirm the single 800 kB chunk
