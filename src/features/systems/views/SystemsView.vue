@@ -5,6 +5,7 @@ import Column from 'primevue/column'
 import DataTable from '@/shared/ui/DataTable.vue'
 import CountUpNumber from '@/shared/ui/CountUpNumber.vue'
 import { useSystemsQuery } from '../composables/useSystemsQuery'
+import PageHeader from '@/shared/ui/PageHeader.vue'
 import { toReadableText } from '@/shared/lib/spacetraders'
 import { symbolSchema } from '../lib/symbol.schema'
 
@@ -23,7 +24,7 @@ function handleExplore() {
   router.push(`/systems/${parsedSymbol.value.data}`)
 }
 
-const { data, isPending, isFetching, isError, refetch } = useSystemsQuery(page)
+const { data, isPending, isFetching, isError, error, refetch } = useSystemsQuery(page)
 
 const rows = computed(
   () =>
@@ -49,12 +50,15 @@ const filteredRows = computed(() => {
 
 <template>
   <div class="p-8">
-    <h1 class="text-[20px] font-semibold uppercase tracking-[0.06em] text-accent">Systems</h1>
-    <p class="mt-1 max-w-2xl text-[14px] text-muted">
-      Systems are clusters of waypoints — planets, moons, asteroid fields, gas giants, and stations
-      — grouped into sectors across the galaxy. The stars won't chart themselves — go stake your
-      claim !
-    </p>
+    <PageHeader title="Systems">
+      <template #description>
+        <p class="mt-1 max-w-2xl text-[14px] text-muted">
+          Systems are clusters of waypoints — planets, moons, asteroid fields, gas giants, and
+          stations — grouped into sectors across the galaxy. The stars won't chart themselves — go
+          stake your claim !
+        </p>
+      </template>
+    </PageHeader>
 
     <DataTable
       v-model:page="page"
@@ -64,9 +68,11 @@ const filteredRows = computed(() => {
       :is-pending="isPending"
       :is-fetching="isFetching"
       :is-error="isError"
+      :error="error"
       error-message="Failed to load systems."
       :total="data?.meta.total ?? 0"
       :limit="data?.meta.limit ?? 1"
+      item-label="systems"
       filter-placeholder="Filter by symbol, name, sector or star type"
       @retry="() => refetch()"
     >
@@ -95,12 +101,12 @@ const filteredRows = computed(() => {
             type="text"
             placeholder="Explore system symbol, e.g. X1-DF55"
             aria-label="Explore system symbol"
-            class="block w-96 rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none"
+            class="block w-96 rounded-sm border border-line bg-surface-0 px-3 py-2 text-data text-fg placeholder-muted focus:border-accent focus:outline-none"
           />
           <button
             type="submit"
             :disabled="!parsedSymbol.success"
-            class="flex h-10 w-fit shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-sm bg-accent px-4 text-[13px] font-semibold text-surface-0 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+            class="flex h-10 w-fit shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-sm bg-accent px-4 text-data font-semibold text-surface-0 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Explore
           </button>

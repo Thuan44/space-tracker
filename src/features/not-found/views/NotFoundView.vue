@@ -11,7 +11,7 @@
         These coordinates don't lead anywhere. Even long-range sensors can't find this waypoint.
       </p>
 
-      <RouterLink to="/" class="mt-5 inline-block text-[13px] text-info hover:underline">
+      <RouterLink to="/" class="mt-5 inline-block text-data text-info hover:underline">
         &larr; Back to dashboard
       </RouterLink>
     </div>

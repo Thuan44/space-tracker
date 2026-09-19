@@ -23,7 +23,7 @@ const { revealed, instant } = useGaugeReveal(toRef(props, 'percent'))
       />
     </div>
     <slot :percent="revealed">
-      <span class="w-9 shrink-0 text-right text-[13px] text-muted">{{ revealed }}%</span>
+      <span class="w-9 shrink-0 text-right text-data text-muted">{{ revealed }}%</span>
     </slot>
   </div>
 </template>

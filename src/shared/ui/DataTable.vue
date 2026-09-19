@@ -1,19 +1,25 @@
 <script setup lang="ts" generic="T">
+import { computed } from 'vue'
 import PrimeDataTable from 'primevue/datatable'
 import Paginator, { type PageState } from 'primevue/paginator'
 import { getTotalPages } from '@/shared/lib/pagination'
+import QueryErrorBanner from './QueryErrorBanner.vue'
+import SkeletonBlock from './SkeletonBlock.vue'
+import FilterInput from './FilterInput.vue'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     rows: T[]
     dataKey: string
     isPending: boolean
     isFetching?: boolean
     isError: boolean
+    error: unknown
     errorMessage: string
-    total: number
-    limit: number
-    page: number
+    total?: number
+    limit?: number
+    page?: number
+    itemLabel?: string
     filterText: string
     filterPlaceholder: string
   }>(),
@@ -29,40 +35,36 @@ const emit = defineEmits<{
 function onPage(event: PageState) {
   emit('update:page', event.page + 1)
 }
+
+const paginationCaption = computed(() => {
+  if (props.total === undefined || props.limit === undefined || props.page === undefined) {
+    return ''
+  }
+  const base = `Page ${props.page} of ${getTotalPages(props.total, props.limit)}`
+  return props.itemLabel ? `${base} · ${props.total} ${props.itemLabel}` : base
+})
 </script>
 
 <template>
   <div>
     <div class="mt-4 flex flex-wrap items-start gap-4">
-      <input
-        :value="filterText"
-        @input="emit('update:filterText', ($event.target as HTMLInputElement).value)"
-        type="text"
+      <FilterInput
+        :model-value="filterText"
         :placeholder="filterPlaceholder"
-        :aria-label="filterPlaceholder"
-        class="block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none"
+        @update:model-value="(value: string) => emit('update:filterText', value)"
       />
       <slot name="toolbar-end" />
     </div>
 
-    <div
-      v-if="isPending"
-      class="mt-4 h-96 animate-pulse rounded-md border border-line bg-surface-1"
-    />
+    <SkeletonBlock v-if="isPending" class="mt-4" height-class="h-96" />
 
-    <div
+    <QueryErrorBanner
       v-else-if="isError"
-      class="mt-4 flex h-16 items-center justify-between rounded-md border border-danger/30 bg-danger/10 px-5"
-    >
-      <p class="text-[13px] text-danger">{{ errorMessage }}</p>
-      <button
-        type="button"
-        class="h-8 cursor-pointer rounded-sm border border-line px-3 text-[13px] text-fg hover:bg-surface-2"
-        @click="emit('retry')"
-      >
-        Retry
-      </button>
-    </div>
+      class="mt-4"
+      :error="error"
+      :fallback-message="errorMessage"
+      @retry="emit('retry')"
+    />
 
     <template v-else>
       <PrimeDataTable
@@ -75,16 +77,17 @@ function onPage(event: PageState) {
       </PrimeDataTable>
 
       <Paginator
-        :rows="limit"
-        :total-records="total"
-        :first="(page - 1) * limit"
+        v-if="total !== undefined && limit !== undefined && page !== undefined"
+        :rows="limit!"
+        :total-records="total!"
+        :first="(page! - 1) * limit!"
         template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
         class="mt-4"
         @page="onPage"
       >
         <template #start>
-          <span class="text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
-            Page {{ page }} of {{ getTotalPages(total, limit) }}
+          <span class="text-label font-semibold uppercase tracking-label text-muted">
+            {{ paginationCaption }}
           </span>
         </template>
       </Paginator>

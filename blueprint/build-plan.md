@@ -268,7 +268,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       the header, the 401 handler, and on login; remove the
       `enabled: !!system.value` cascade on the waypoints query.
 
-- [ ] 22. **Extract duplicated components, reuse `DataTable` everywhere** -
+- [x] 22. **Extract duplicated components, reuse `DataTable` everywhere** -
       `blueprint/specs/post-release-improvements.md` step 7. Extract
       `QueryErrorBanner`, `SkeletonBlock`, `FilterInput`,
       `ShipStatusBadge`, `formatEta`, `Pill`, `DetailField`, `InfoPanel`,
