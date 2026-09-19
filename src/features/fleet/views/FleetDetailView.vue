@@ -1,49 +1,54 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
-import { RouterLink, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { Users, Box, Wrench } from '@primeicons/vue'
-import { getShip } from '../api/ship'
+import { getShip, shipKeys } from '../api/ship'
 import type { Ship } from '../api/ship.schema'
-import { getWaypoint } from '@/features/systems/api/waypoint'
+import ShipStatusBadge from '../components/ShipStatusBadge.vue'
+import { formatEta } from '../lib/eta'
+import { getWaypoint, waypointKeys } from '@/features/systems/api/waypoint'
 import { percentOf, systemSymbolFromWaypoint, toReadableText } from '@/shared/lib/spacetraders'
-import TypewriterText from '@/shared/ui/TypewriterText.vue'
+import { STALE_TIME } from '@/shared/api/query-config'
+import PageHeader from '@/shared/ui/PageHeader.vue'
 import GaugeBar from '@/shared/ui/GaugeBar.vue'
+import QueryErrorBanner from '@/shared/ui/QueryErrorBanner.vue'
+import SkeletonBlock from '@/shared/ui/SkeletonBlock.vue'
+import PillBadge from '@/shared/ui/PillBadge.vue'
+import DetailField from '@/shared/ui/DetailField.vue'
+import InfoPanel from '@/shared/ui/InfoPanel.vue'
+import BackLink from '@/shared/ui/BackLink.vue'
 
 const route = useRoute()
-const shipSymbol = route.params.shipSymbol as string
+const shipSymbol = computed(() => route.params.shipSymbol as string)
 
 const {
   data: ship,
   isPending,
   isError,
+  error,
   refetch,
 } = useQuery({
-  queryKey: ['ship', shipSymbol],
-  queryFn: () => getShip(shipSymbol),
+  queryKey: shipKeys.detail(shipSymbol),
+  queryFn: () => getShip(shipSymbol.value),
+  staleTime: STALE_TIME.ships,
 })
+
+const waypointSymbol = computed(() => ship.value?.nav.waypointSymbol)
+const waypointSystemSymbol = computed(() =>
+  waypointSymbol.value ? systemSymbolFromWaypoint(waypointSymbol.value) : undefined,
+)
 
 const { data: waypoint } = useQuery({
-  queryKey: ['waypoint-for-ship', shipSymbol],
-  queryFn: () =>
-    getWaypoint(
-      systemSymbolFromWaypoint(ship.value!.nav.waypointSymbol),
-      ship.value!.nav.waypointSymbol,
-    ),
-  enabled: computed(() => !!ship.value),
+  queryKey: waypointKeys.detail(waypointSystemSymbol, waypointSymbol),
+  queryFn: () => getWaypoint(waypointSystemSymbol.value!, waypointSymbol.value!),
+  enabled: computed(() => !!waypointSymbol.value),
+  staleTime: STALE_TIME.waypoints,
 })
 
-const hasMarket = computed(() => waypoint.value?.traits.some((trait) => trait.symbol === 'MARKETPLACE') ?? false)
-
-const statusBadgeClasses: Record<Ship['nav']['status'], string> = {
-  DOCKED: 'border-accent/30 bg-accent/10 text-accent',
-  IN_TRANSIT: 'border-warn/30 bg-warn/10 text-warn',
-  IN_ORBIT: 'border-info/30 bg-info/10 text-info',
-}
-
-function eta(ship: Ship): string {
-  return ship.nav.status === 'IN_TRANSIT' ? new Date(ship.nav.route.arrival).toLocaleString() : '—'
-}
+const hasMarket = computed(
+  () => waypoint.value?.traits.some((trait) => trait.symbol === 'MARKETPLACE') ?? false,
+)
 
 function cooldownText(ship: Ship): string {
   return ship.cooldown.remainingSeconds > 0 ? `${ship.cooldown.remainingSeconds}s` : 'None'
@@ -52,169 +57,156 @@ function cooldownText(ship: Ship): string {
 
 <template>
   <div class="p-8">
-    <RouterLink to="/fleet"
-      class="text-[13px] font-semibold uppercase tracking-[0.09em] text-info hover:underline">
-      <span aria-hidden="true">&larr;</span> Back to fleet
-    </RouterLink>
+    <BackLink to="/fleet">Back to fleet</BackLink>
 
-    <div v-if="isPending" class="mt-6 h-40 animate-pulse rounded-md border border-line bg-surface-1" />
+    <SkeletonBlock v-if="isPending" class="mt-6" height-class="h-40" />
 
-    <div v-else-if="isError"
-      class="mt-6 flex h-16 items-center justify-between rounded-md border border-danger/30 bg-danger/10 px-5">
-      <p class="text-[13px] text-danger">Failed to load ship.</p>
-      <button type="button"
-        class="h-8 cursor-pointer rounded-sm border border-line px-3 text-[13px] text-fg hover:bg-surface-2"
-        @click="() => refetch()">
-        Retry
-      </button>
-    </div>
+    <QueryErrorBanner
+      v-else-if="isError"
+      class="mt-6"
+      :error="error"
+      fallback-message="Failed to load ship."
+      @retry="() => refetch()"
+    />
 
     <template v-else-if="ship">
-      <div class="mt-6 flex items-center gap-4">
-        <h2 class="text-[28px] font-semibold tracking-[0.02em] text-accent">
-          <TypewriterText :text="ship.symbol" />
-        </h2>
-        <span class="rounded-xs border px-2 py-0.5 text-[14px] font-semibold uppercase tracking-[0.09em]"
-          :class="statusBadgeClasses[ship.nav.status]">
-          {{ toReadableText(ship.nav.status) }}
-        </span>
-      </div>
-      <p class="mt-1 text-[13px] text-muted">{{ toReadableText(ship.registration.role) }}</p>
+      <PageHeader class="mt-6" typewriter :title="ship.symbol">
+        <template #badge>
+          <ShipStatusBadge :status="ship.nav.status" />
+        </template>
+        <template #description>
+          <p class="mt-1 text-data text-muted">{{ toReadableText(ship.registration.role) }}</p>
+        </template>
+      </PageHeader>
 
       <div class="mt-6 flex flex-wrap gap-x-10 gap-y-4 border-b border-line pb-6">
-        <div>
-          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Position</span>
-          <div class="mt-1 flex items-center gap-2">
+        <DetailField label="Position">
+          <div class="flex items-center gap-2">
             <span class="text-[15px] font-semibold text-fg">{{ ship.nav.waypointSymbol }}</span>
-            <RouterLink v-if="hasMarket" :to="`/markets/${ship.nav.waypointSymbol}`"
-              class="rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.09em] border-info/40 text-info hover:bg-info/10">
+            <PillBadge v-if="hasMarket" variant="info" :to="`/markets/${ship.nav.waypointSymbol}`">
               Market
-            </RouterLink>
+            </PillBadge>
           </div>
-        </div>
-        <div>
-          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">ETA</span>
-          <span class="mt-1 block text-[15px] font-semibold text-fg">{{ eta(ship) }}</span>
-        </div>
-        <div>
-          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Fuel</span>
-          <div class="mt-1">
-            <GaugeBar :percent="percentOf(ship.fuel.current, ship.fuel.capacity)" bar-width-class="w-24">
-              <span class="text-[13px] text-muted">{{ ship.fuel.current }}/{{ ship.fuel.capacity }}</span>
-            </GaugeBar>
-          </div>
-        </div>
-        <div>
-          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Cooldown</span>
-          <span class="mt-1 block text-[15px] font-semibold text-fg">{{ cooldownText(ship) }}</span>
-        </div>
+        </DetailField>
+        <DetailField label="ETA">
+          <span class="text-[15px] font-semibold text-fg">{{ formatEta(ship) }}</span>
+        </DetailField>
+        <DetailField label="Fuel">
+          <GaugeBar
+            :percent="percentOf(ship.fuel.current, ship.fuel.capacity)"
+            bar-width-class="w-24"
+            label="Fuel"
+          >
+            <span class="text-data text-muted"
+              >{{ ship.fuel.current }}/{{ ship.fuel.capacity }}</span
+            >
+          </GaugeBar>
+        </DetailField>
+        <DetailField label="Cooldown">
+          <span class="text-[15px] font-semibold text-fg">{{ cooldownText(ship) }}</span>
+        </DetailField>
       </div>
 
       <div class="mt-6 grid grid-cols-2 gap-6">
-        <div class="rounded-md border border-line bg-surface-1 p-6">
-          <div class="flex items-center justify-between">
-            <h3 class="text-[13px] font-semibold uppercase tracking-[0.12em] text-fg">Crew</h3>
-            <Users class="size-4 text-muted" />
-          </div>
-
+        <InfoPanel title="Crew" :icon="Users">
           <div class="mt-3 flex flex-wrap gap-x-10 gap-y-4">
-            <div>
-              <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Members</span>
-              <span class="mt-1 block text-[15px] font-semibold text-fg">
+            <DetailField label="Members">
+              <span class="text-[15px] font-semibold text-fg">
                 {{ ship.crew.current }}/{{ ship.crew.required }} (max {{ ship.crew.capacity }})
               </span>
-            </div>
-            <div>
-              <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Morale</span>
-              <span class="mt-1 block text-[15px] font-semibold text-fg">{{ ship.crew.morale }}%</span>
-            </div>
-            <div>
-              <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Rotation</span>
-              <span class="mt-1 block text-[15px] font-semibold text-fg">{{ toReadableText(ship.crew.rotation) }}</span>
-            </div>
-            <div>
-              <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Wages</span>
-              <span class="mt-1 block text-[15px] font-semibold text-fg">{{ ship.crew.wages.toLocaleString() }}</span>
-            </div>
+            </DetailField>
+            <DetailField label="Morale">
+              <span class="text-[15px] font-semibold text-fg">{{ ship.crew.morale }}%</span>
+            </DetailField>
+            <DetailField label="Rotation">
+              <span class="text-[15px] font-semibold text-fg">{{
+                toReadableText(ship.crew.rotation)
+              }}</span>
+            </DetailField>
+            <DetailField label="Wages">
+              <span class="text-[15px] font-semibold text-fg">{{
+                ship.crew.wages.toLocaleString()
+              }}</span>
+            </DetailField>
           </div>
-        </div>
+        </InfoPanel>
 
-        <div class="rounded-md border border-line bg-surface-1 p-6">
-          <div class="flex items-center justify-between">
-            <h3 class="text-[13px] font-semibold uppercase tracking-[0.12em] text-fg">
-              Cargo &middot; {{ ship.cargo.units }}/{{ ship.cargo.capacity }}
-            </h3>
-            <Box class="size-4 text-muted" />
-          </div>
-
-          <p v-if="ship.cargo.inventory.length === 0" class="mt-3 text-[13px] text-muted">
+        <InfoPanel :title="`Cargo · ${ship.cargo.units}/${ship.cargo.capacity}`" :icon="Box">
+          <p v-if="ship.cargo.inventory.length === 0" class="mt-3 text-data text-muted">
             Cargo hold is empty.
           </p>
 
-          <table v-else class="mt-3 w-full text-left text-[13px]">
+          <table v-else class="mt-3 w-full text-left text-data">
             <thead>
-              <tr class="border-b border-line text-[12px] uppercase tracking-[0.09em] text-muted">
+              <tr class="border-b border-line text-label-lg uppercase tracking-label text-muted">
                 <th class="py-2 font-semibold">Item</th>
                 <th class="py-2 font-semibold">Units</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in ship.cargo.inventory" :key="item.symbol" class="border-b border-line last:border-0">
+              <tr
+                v-for="item in ship.cargo.inventory"
+                :key="item.symbol"
+                class="border-b border-line last:border-0"
+              >
                 <td class="py-2 text-fg">{{ item.name }}</td>
                 <td class="py-2 text-fg">{{ item.units }}</td>
               </tr>
             </tbody>
           </table>
-        </div>
+        </InfoPanel>
       </div>
 
-      <div class="mt-6 rounded-md border border-line bg-surface-1 p-6">
-        <div class="flex items-center justify-between">
-          <h3 class="text-[13px] font-semibold uppercase tracking-[0.12em] text-fg">Components</h3>
-          <Wrench class="size-4 text-muted" />
-        </div>
-
+      <InfoPanel class="mt-6" title="Components" :icon="Wrench">
         <div class="mt-3 flex flex-wrap gap-x-10 gap-y-4">
-          <div v-for="component in [
-            { label: 'Frame', data: ship.frame },
-            { label: 'Reactor', data: ship.reactor },
-            { label: 'Engine', data: ship.engine },
-          ]" :key="component.label">
-            <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">{{
-              component.label }}</span>
-            <span class="mt-1 block text-[15px] font-semibold text-fg">{{ component.data.name }}</span>
+          <DetailField
+            v-for="component in [
+              { label: 'Frame', data: ship.frame },
+              { label: 'Reactor', data: ship.reactor },
+              { label: 'Engine', data: ship.engine },
+            ]"
+            :key="component.label"
+            :label="component.label"
+          >
+            <span class="block text-[15px] font-semibold text-fg">{{ component.data.name }}</span>
             <div class="mt-1">
-              <GaugeBar :percent="percentOf(component.data.condition, 1)" bar-width-class="w-24">
+              <GaugeBar
+                :percent="percentOf(component.data.condition, 1)"
+                bar-width-class="w-24"
+                :label="`${component.label} condition`"
+              >
                 <template #default="{ percent }">
-                  <span class="text-[13px] text-muted">{{ percent }}%</span>
+                  <span class="text-data text-muted">{{ percent }}%</span>
                 </template>
               </GaugeBar>
             </div>
-          </div>
+          </DetailField>
         </div>
 
         <div class="mt-6">
-          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Modules</span>
-          <div v-if="ship.modules.length === 0" class="mt-2 text-[13px] text-muted">&mdash;</div>
+          <span class="block text-label-lg font-semibold uppercase tracking-label text-muted"
+            >Modules</span
+          >
+          <div v-if="ship.modules.length === 0" class="mt-2 text-data text-muted">&mdash;</div>
           <div v-else class="mt-2 flex flex-wrap gap-2">
-            <span v-for="mod in ship.modules" :key="mod.symbol"
-              class="rounded-full border border-line bg-surface-2 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
+            <PillBadge v-for="mod in ship.modules" :key="mod.symbol" variant="muted">
               {{ mod.name }}
-            </span>
+            </PillBadge>
           </div>
         </div>
 
         <div class="mt-4">
-          <span class="block text-[12px] font-semibold uppercase tracking-[0.09em] text-muted">Mounts</span>
-          <div v-if="ship.mounts.length === 0" class="mt-2 text-[13px] text-muted">&mdash;</div>
+          <span class="block text-label-lg font-semibold uppercase tracking-label text-muted"
+            >Mounts</span
+          >
+          <div v-if="ship.mounts.length === 0" class="mt-2 text-data text-muted">&mdash;</div>
           <div v-else class="mt-2 flex flex-wrap gap-2">
-            <span v-for="mount in ship.mounts" :key="mount.symbol"
-              class="rounded-full border border-line bg-surface-2 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
+            <PillBadge v-for="mount in ship.mounts" :key="mount.symbol" variant="muted">
               {{ mount.name }}
-            </span>
+            </PillBadge>
           </div>
         </div>
-      </div>
+      </InfoPanel>
     </template>
   </div>
 </template>

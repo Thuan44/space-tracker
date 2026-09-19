@@ -46,3 +46,15 @@ __screenshots__/
 # Blueprint (Obsidian symlinks)
 blueprint/reference
 blueprint/specs
+
+# AI Blueprint (local tooling, not published)
+.agents/
+.claude/skills/
+AGENTS.md
+CLAUDE.md
+blueprint/config.json
+blueprint/context/ai-interaction.md
+blueprint/context/findings.md
+blueprint/context/current-feature.md
+blueprint/context/review.md
+blueprint/.state/manifest.json

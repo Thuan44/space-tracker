@@ -6,4 +6,7 @@ const props = defineProps<{ text: string }>()
 const display = useTypewriter(toRef(props, 'text'))
 </script>
 
-<template>{{ display }}</template>
+<template>
+  <span class="sr-only">{{ text }}</span>
+  <span aria-hidden="true">{{ display }}</span>
+</template>

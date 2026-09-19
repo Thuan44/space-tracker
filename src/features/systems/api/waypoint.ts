@@ -1,3 +1,4 @@
+import type { MaybeRefOrGetter } from 'vue'
 import { request, requestPage, type PageOptions, type RequestOptions } from '@/shared/api/http'
 import { waypointSchema } from './waypoint.schema'
 
@@ -11,4 +12,13 @@ export function getWaypoint(
   options?: RequestOptions,
 ) {
   return request(`/systems/${systemSymbol}/waypoints/${waypointSymbol}`, waypointSchema, options)
+}
+
+export const waypointKeys = {
+  list: (systemSymbol: MaybeRefOrGetter<string>, page: MaybeRefOrGetter<number>) =>
+    ['waypoints', systemSymbol, page] as const,
+  detail: (
+    systemSymbol: MaybeRefOrGetter<string | undefined>,
+    waypointSymbol: MaybeRefOrGetter<string | undefined>,
+  ) => ['waypoint', systemSymbol, waypointSymbol] as const,
 }

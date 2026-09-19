@@ -1,26 +1,32 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
-import { RouterLink, useRoute } from 'vue-router'
-import PrimeDataTable from 'primevue/datatable'
+import { useRoute } from 'vue-router'
 import Column from 'primevue/column'
-import { getMarket } from '../api/market'
+import { getMarket, marketKeys } from '../api/market'
 import type { MarketTradeGood, TradeGoodInfo } from '../api/market.schema'
 import { systemSymbolFromWaypoint, toReadableText } from '@/shared/lib/spacetraders'
-import TypewriterText from '@/shared/ui/TypewriterText.vue'
+import { STALE_TIME } from '@/shared/api/query-config'
+import PageHeader from '@/shared/ui/PageHeader.vue'
+import QueryErrorBanner from '@/shared/ui/QueryErrorBanner.vue'
+import SkeletonBlock from '@/shared/ui/SkeletonBlock.vue'
+import DataTable from '@/shared/ui/DataTable.vue'
+import BackLink from '@/shared/ui/BackLink.vue'
 
 const route = useRoute()
-const waypointSymbol = route.params.waypointSymbol as string
-const systemSymbol = systemSymbolFromWaypoint(waypointSymbol)
+const waypointSymbol = computed(() => route.params.waypointSymbol as string)
+const systemSymbol = computed(() => systemSymbolFromWaypoint(waypointSymbol.value))
 
 const {
   data: market,
   isPending,
   isError,
+  error,
   refetch,
 } = useQuery({
-  queryKey: ['market', waypointSymbol],
-  queryFn: () => getMarket(systemSymbol, waypointSymbol),
+  queryKey: marketKeys.detail(waypointSymbol),
+  queryFn: () => getMarket(systemSymbol.value, waypointSymbol.value),
+  staleTime: STALE_TIME.market,
 })
 
 const filterText = ref('')
@@ -67,43 +73,48 @@ const filteredRows = computed(() => {
 
 <template>
   <div class="p-8">
-    <RouterLink :to="`/systems/${systemSymbol}`"
-      class="text-[13px] font-semibold uppercase tracking-[0.09em] text-info hover:underline">
-      <span aria-hidden="true">&larr;</span> Back to system
-    </RouterLink>
+    <BackLink :to="`/systems/${systemSymbol}`">Back to system</BackLink>
 
-    <div v-if="isPending" class="mt-6 h-28 animate-pulse rounded-md border border-line bg-surface-1" />
+    <SkeletonBlock v-if="isPending" class="mt-6" height-class="h-28" />
 
-    <div v-else-if="isError"
-      class="mt-6 flex h-16 items-center justify-between rounded-md border border-danger/30 bg-danger/10 px-5">
-      <p class="text-[13px] text-danger">Failed to load market.</p>
-      <button type="button"
-        class="h-8 cursor-pointer rounded-sm border border-line px-3 text-[13px] text-fg hover:bg-surface-2"
-        @click="() => refetch()">
-        Retry
-      </button>
-    </div>
+    <QueryErrorBanner
+      v-else-if="isError"
+      class="mt-6"
+      :error="error"
+      fallback-message="Failed to load market."
+      @retry="() => refetch()"
+    />
 
     <template v-else-if="market">
-      <h2 class="mt-6 text-[28px] font-semibold tracking-[0.02em] text-accent">
-        <TypewriterText :text="market.symbol" />
-      </h2>
-      <p class="mt-1 max-w-2xl text-[14px] text-muted">
-        Markets are trading posts found at select waypoints, listing the goods you can export, import,
-        or exchange here. Prices move with supply and activity — and with every deal your agents make. Buy low, sell
-        high — fortune favors the trader who watches the board !
-      </p>
+      <PageHeader class="mt-6" typewriter :title="market.symbol">
+        <template #description>
+          <p class="mt-1 max-w-2xl text-[14px] text-muted">
+            Markets are trading posts found at select waypoints, listing the goods you can export,
+            import, or exchange here. Prices move with supply and activity — and with every deal
+            your agents make. Buy low, sell high — fortune favors the trader who watches the board !
+          </p>
+        </template>
+      </PageHeader>
 
-      <div v-if="!hasTradeGoods"
-        class="mt-6 rounded-md border border-warn/30 bg-warn/10 px-5 py-3 text-[13px] text-warn">
+      <div
+        v-if="!hasTradeGoods"
+        class="mt-6 rounded-md border border-warn/30 bg-warn/10 px-5 py-3 text-data text-warn"
+      >
         Limited market info: an agent ship must be present at this waypoint to see prices, volume,
         supply and activity.
       </div>
 
-      <input v-model="filterText" type="text" placeholder="Filter by name or type"
-        class="mt-6 block w-full max-w-sm rounded-sm border border-line bg-surface-0 px-3 py-2 text-[13px] text-fg placeholder-muted focus:border-accent focus:outline-none" />
-
-      <PrimeDataTable :value="filteredRows" data-key="symbol" class="mt-4">
+      <DataTable
+        class="mt-6"
+        v-model:filter-text="filterText"
+        :rows="filteredRows"
+        data-key="symbol"
+        :is-pending="false"
+        :is-error="false"
+        :error="null"
+        error-message="Failed to load market goods."
+        filter-placeholder="Filter by name or type"
+      >
         <Column field="name" header="Name" />
         <Column field="displayType" header="Type" />
         <template v-if="hasTradeGoods">
@@ -122,7 +133,7 @@ const filteredRows = computed(() => {
             </template>
           </Column>
         </template>
-      </PrimeDataTable>
+      </DataTable>
     </template>
   </div>
 </template>

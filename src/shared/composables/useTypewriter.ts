@@ -29,7 +29,11 @@ export function useTypewriter(text: Ref<string>, charDelay = DEFAULT_CHAR_DELAY_
   watch(text, (newText) => type(newText), { immediate: true, flush: 'sync' })
 
   // Replay from empty when motion is turned back on; snap immediately when turned off.
-  watch(() => motionStore.reduced, () => type(text.value), { flush: 'sync' })
+  watch(
+    () => motionStore.reduced,
+    () => type(text.value),
+    { flush: 'sync' },
+  )
 
   onUnmounted(() => {
     if (timer) clearTimeout(timer)

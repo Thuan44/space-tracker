@@ -19,6 +19,12 @@
   --radius-md: 6px;
 
   --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+
+  --text-data: 13px;
+  --text-label: 11px;
+  --text-label-lg: 12px;
+
+  --tracking-label: 0.09em;
 }
 
 @layer base {

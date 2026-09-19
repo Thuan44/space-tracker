@@ -1,6 +1,6 @@
 # Space Tracker - Project Overview
 
-<!-- blueprint:source-hash ac2f8174837bc00fbdcce70d12da41ec949d32f43f392b6055bbbab9b02db624 -->
+<!-- blueprint:source-hash b54606cf7dfc96505e8e2aaeec2a086e1e89b0b919a32dafef13ae492c7089ba -->
 
 > A read-only web control panel for a SpaceTraders agent: authenticate with an
 > agent token, then browse fleet, systems, and market data without hitting the
