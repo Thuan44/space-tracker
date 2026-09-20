@@ -279,46 +279,34 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       letter-spacing design tokens to `main.css` and replace the
       arbitrary Tailwind values they replace.
 
-- [ ] 23. **Router: `meta.requiresAuth` guard** - `blueprint/specs/post-release-improvements.md`
-      point A. Replace the 7 repeated `beforeEnter` guards with a single
-      `router.beforeEach` driven by route meta, preserving the
-      `/login?redirect=…` destination. *Independent of the numbered
-      steps above — not a priority.*
+- [ ] 23. **Ship navigation** - Mutations orbit/dock/navigate/refuel with
+      `useMutation`, UI in `FleetDetailView` (waypoint selector, status-
+      conditional buttons), polling temps réel (10s when `IN_TRANSIT`) in
+      `FleetDetailView`, `FleetView`, and `DashboardView`. Fondation HTTP
+      with `mutate<T>()` in `shared/api/http.ts` (POST/PATCH/PUT support,
+      `Content-Type: application/json`, body serialization, reuses
+      `ApiError` infrastructure). Separate response schemas per endpoint
+      in `features/fleet/api/navigation.schema.ts`: orbit/dock → `nav`
+      only, navigate → `nav` + `fuel`, refuel → `agent` + `fuel` +
+      `transaction` (reuse existing `nav`/`fuel` schemas from
+      `ship.schema.ts`). Composable `useShipNavigation.ts` with 4
+      mutations, cache invalidation on success (orbit/dock/navigate
+      invalidate ship queries, refuel also invalidates agent queries for
+      credits deduction). See `blueprint/specs/plan-navigation-
+      notifications.md` for full technical approach.
 
-- [ ] 24. **Zod schema robustness for API enums** - `blueprint/specs/post-release-improvements.md`
-      point B. Loosen display-only enum fields (`ship.nav.status`,
-      `supply`, `activity`, waypoint/system `type`, ship `role`) so an
-      unknown value from the API degrades gracefully instead of failing
-      `safeParse()` for the whole list; keep strict validation only where
-      a field drives logic; also fix the `MarketView` O(n·m) `find`-in-
-      `map` by indexing trade goods into a `Map`. *Independent of the
-      numbered steps above — not a priority.*
+- [ ] 24. **Real-time notifications** - PrimeVue Toast for mutation feedback
+      (success/error) and arrival detection (`watch` on `ship.nav.status`
+      in `FleetDetailView` only — `FleetView`/`DashboardView` polling
+      updates data but shows no toast, deliberate v1 scope choice). Toast
+      config in `plugins/primevue.ts` (unstyled pt + design system
+      colors), `ToastService` registered in `main.ts`, `<Toast />`
+      component in `App.vue`. Update `README.md` to reflect v2 changes
+      (navigation/refuel/polling/notifications). See
+      `blueprint/specs/plan-navigation-notifications.md` for full
+      technical approach.
 
-- [ ] 25. **Animation cleanup** - `blueprint/specs/post-release-improvements.md`
-      point C. Move `useCountUp` from a `setTimeout`/`Date.now()` loop to
-      `requestAnimationFrame` (matching `useGaugeReveal`), update its
-      tests, and limit `CountUpNumber` so it doesn't run 20 simultaneous
-      timers on the systems table. *Independent of the numbered steps
-      above — not a priority.*
-
-- [ ] 26. **Clarify filter/sort scope in the UI** - `blueprint/specs/post-release-improvements.md`
-      point D. The filter and sort intentionally only apply to the
-      currently loaded page, not the full dataset (decided 2026-09-17);
-      adjust the placeholder text or add a short note so this doesn't
-      read as a global search. *Independent of the numbered steps above
-      — not a priority.*
-
-- [ ] 27. **v2 scope candidates** - `blueprint/specs/post-release-improvements.md`
-      point E. Auto-refresh (`refetchInterval` while a ship is
-      `IN_TRANSIT`, ETA/cooldown countdowns); a waypoint detail page
-      (traits, orbitals, faction, market); a markets index (today a
-      market is only reachable via a waypoint badge); the first mutation
-      (`orbit`/`dock` via `useMutation` with cache invalidation), noting
-      the MVP was deliberately kept read-only (decided 2026-09-18).
-      *Independent of the numbered steps above — not a priority, deferred
-      to v2.*
-
-## Out of scope for this build plan (v2+)
+## Out of scope for this build plan (future)
 
 See `project-plan.md` section 3 for the full list and rationale: real-time
 notifications, market buy/sell, ship navigation/piloting, faction

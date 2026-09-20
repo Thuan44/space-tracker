@@ -58,13 +58,35 @@ Supporting, non-domain routes required to make the above usable:
 All MVP read paths are read-only: no ship navigation, no market buy/sell, no
 contract handling.
 
-### Out of scope (v2+)
+### v2 Features
 
-From `brief.md` "Hors scope (v2+)":
+Features being actively developed for the next major version:
 
-1. **Real-time notifications/events** (optional in the brief) — not needed to
-   demonstrate the core features within the delivery window.
-2. **Commercial action planning (buy/sell on a market)** — the brief's
+1. **Ship navigation** — orbit/dock/navigate/refuel mutations via TanStack Query
+   (`useMutation`), integrated into `FleetDetailView` with a waypoint selector
+   dropdown and status-conditional action buttons. API layer built on a new
+   `mutate<T>()` function in `shared/api/http.ts` (POST/PATCH/PUT support with
+   `Content-Type: application/json`). Separate response schemas per endpoint
+   (`orbit`/`dock` return `nav` only, `navigate` returns `nav` + `fuel`,
+   `refuel` returns `agent` + `fuel` + `transaction`) colocated in
+   `features/fleet/api/navigation.schema.ts`. Cache invalidation on success:
+   orbit/dock/navigate invalidate ship queries, refuel also invalidates agent
+   queries (credits deducted). Conditional polling (`refetchInterval: 10s`)
+   when any ship is `IN_TRANSIT` in `FleetDetailView`, `FleetView`, and
+   `DashboardView` to keep status/ETA live without WebSocket (API has none).
+2. **Real-time notifications** — PrimeVue Toast for mutation feedback
+   (success/error) and arrival detection (via `watch` on `ship.nav.status` in
+   `FleetDetailView` only — `FleetView`/`DashboardView` polling updates data
+   but shows no toast, deliberate v1 scope choice). Toast configured in
+   `plugins/primevue.ts` (unstyled pt + design system colors), `ToastService`
+   registered in `main.ts`, `<Toast />` component in `App.vue`.
+
+### Out of scope (future)
+
+From `brief.md` "Hors scope (v2+)", with v2-planned items moved to the v2
+Features section above:
+
+1. **Commercial action planning (buy/sell on a market)** — the brief's
    product-context paragraph mentions it, but the actual evaluated feature
    list only asks for market _display_. The `Market` data model and API
    client are designed to be extensible toward this later
@@ -78,10 +100,10 @@ From `brief.md` "Hors scope (v2+)":
    recording a demo, not by an in-app feature.
 4. **Faction management** — `Agent.startingFaction` is displayed as a static,
    informational badge only; no faction-specific screens or logic.
-5. **Contracts, Shipyard purchases** — noted in the entity diagram
+3. **Contracts, Shipyard purchases** — noted in the entity diagram
    (`relations-entites.png`) as secondary entities outside the MVP's
    evaluated scope.
-6. Mobile-optimized responsive design — desktop/tablet only (see
+4. Mobile-optimized responsive design — desktop/tablet only (see
    [UI/UX](#7-uiux---how-should-this-look-and-feel)).
 
 ## 4. Data - What are we storing?
@@ -134,8 +156,9 @@ From `specs-techniques.md`, already scaffolded in this repo:
 - **@fontsource/ibm-plex-mono** — self-hosted IBM Plex Mono (400/500/600/700);
   the design docs specify the typeface but not a loading mechanism, chosen
   over an external Google Fonts `<link>`
-- **TanStack Query (Vue Query)** — server-state fetching/caching, one basic
-  `useQuery` per screen/resource, default `staleTime`, no mutations
+- **TanStack Query (Vue Query)** — server-state fetching/caching with
+  `useQuery` per screen/resource and `useMutation` for write operations,
+  per-resource `staleTime`, cache invalidation on mutations
 - ESLint + oxlint + Prettier (already configured)
 - GitLab CI/CD (see [CI/CD](#8-deployment---where-and-how-will-this-ship))
 
