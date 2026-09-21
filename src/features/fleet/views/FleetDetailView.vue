@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { useRoute } from 'vue-router'
+import { useToast } from 'primevue/usetoast'
 import { Users, Box, Wrench, Sync, ArrowDown, Send, Bolt } from '@primeicons/vue'
 import Select from 'primevue/select'
 import { getShip, shipKeys } from '../api/ship'
@@ -56,7 +57,25 @@ const hasMarket = computed(
   () => waypoint.value?.traits.some((trait) => trait.symbol === 'MARKETPLACE') ?? false,
 )
 
+const toast = useToast()
+
+watch(
+  () => ship.value?.nav.status,
+  (next, prev) => {
+    if (prev === 'IN_TRANSIT' && next && next !== 'IN_TRANSIT') {
+      toast.add({
+        severity: 'success',
+        summary: 'Arrived',
+        detail: `${ship.value!.symbol} arrived at ${ship.value!.nav.waypointSymbol}.`,
+        life: 3000,
+      })
+    }
+  },
+)
+
 const { orbit, dock, navigate, refuel } = useShipNavigation()
+
+const ACTION_ERROR_FALLBACK = 'Action failed. Check ship status and try again.'
 
 const selectedWaypointSymbol = ref<string | null>(null)
 
@@ -90,33 +109,93 @@ const isPending = computed(
 
 const canRefuel = computed(() => ship.value && ship.value.fuel.current < ship.value.fuel.capacity)
 
-const navigationError = computed(() => {
-  const error = orbit.error.value ?? dock.error.value ?? navigate.error.value ?? refuel.error.value
-  return error ? getErrorMessage(error, 'Action failed. Check ship status and try again.') : null
-})
-
 function handleOrbit() {
   if (!ship.value) return
-  orbit.mutate(ship.value.symbol)
+  const symbol = ship.value.symbol
+  orbit.mutate(symbol, {
+    onSuccess: () =>
+      toast.add({
+        severity: 'success',
+        summary: 'Ship in orbit',
+        detail: `${symbol} is now in orbit.`,
+        life: 3000,
+      }),
+    onError: (error) =>
+      toast.add({
+        severity: 'error',
+        summary: 'Orbit failed',
+        detail: getErrorMessage(error, ACTION_ERROR_FALLBACK),
+        life: 6000,
+      }),
+  })
 }
 
 function handleDock() {
   if (!ship.value) return
-  dock.mutate(ship.value.symbol)
+  const symbol = ship.value.symbol
+  dock.mutate(symbol, {
+    onSuccess: () =>
+      toast.add({
+        severity: 'success',
+        summary: 'Ship docked',
+        detail: `${symbol} is now docked.`,
+        life: 3000,
+      }),
+    onError: (error) =>
+      toast.add({
+        severity: 'error',
+        summary: 'Dock failed',
+        detail: getErrorMessage(error, ACTION_ERROR_FALLBACK),
+        life: 6000,
+      }),
+  })
 }
 
 function handleNavigate() {
   if (!ship.value || !selectedWaypointSymbol.value) return
-  navigate.mutate({
-    shipSymbol: ship.value.symbol,
-    waypointSymbol: selectedWaypointSymbol.value,
-  })
+  const symbol = ship.value.symbol
+  const waypointSymbol = selectedWaypointSymbol.value
+  navigate.mutate(
+    { shipSymbol: symbol, waypointSymbol },
+    {
+      onSuccess: () =>
+        toast.add({
+          severity: 'success',
+          summary: 'Ship departed',
+          detail: `${symbol} is heading to ${waypointSymbol}.`,
+          life: 3000,
+        }),
+      onError: (error) =>
+        toast.add({
+          severity: 'error',
+          summary: 'Navigation failed',
+          detail: getErrorMessage(error, ACTION_ERROR_FALLBACK),
+          life: 6000,
+        }),
+    },
+  )
   selectedWaypointSymbol.value = null
 }
 
 function handleRefuel() {
   if (!ship.value) return
-  refuel.mutate(ship.value.symbol)
+  const symbol = ship.value.symbol
+  refuel.mutate(symbol, {
+    onSuccess: () =>
+      toast.add({
+        severity: 'success',
+        summary: 'Refueled',
+        detail: `${symbol}'s fuel tank is topped up.`,
+        life: 3000,
+      }),
+    onError: (error) =>
+      toast.add({
+        severity: 'error',
+        summary: 'Refuel failed',
+        detail: getErrorMessage(error, ACTION_ERROR_FALLBACK),
+        life: 6000,
+      }),
+  })
 }
 
 function cooldownText(ship: Ship): string {
@@ -180,10 +259,6 @@ function cooldownText(ship: Ship): string {
         <h3 class="mb-3 text-label-lg font-semibold uppercase tracking-label text-muted">
           Navigation
         </h3>
-
-        <p v-if="navigationError" role="alert" class="mb-4 text-data text-danger">
-          {{ navigationError }}
-        </p>
 
         <p
           v-if="ship.nav.status === 'IN_ORBIT' && selectedWaypointSymbol && ship.fuel.current === 0"

@@ -295,7 +295,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       credits deduction). See `blueprint/specs/plan-navigation-
       notifications.md` for full technical approach.
 
-- [ ] 24. **Real-time notifications** - PrimeVue Toast for mutation feedback
+- [x] 24. **Real-time notifications** - PrimeVue Toast for mutation feedback
       (success/error) and arrival detection (`watch` on `ship.nav.status`
       in `FleetDetailView` only — `FleetView`/`DashboardView` polling
       updates data but shows no toast, deliberate v1 scope choice). Toast

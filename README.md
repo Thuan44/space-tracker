@@ -1,8 +1,9 @@
 # Space Tracker
 
-A read-only web control panel for a [SpaceTraders](https://spacetraders.io/)
-agent: authenticate with an agent token, then browse fleet, systems, and
-market data without hitting the raw API by hand.
+A web control panel for a [SpaceTraders](https://spacetraders.io/) agent:
+authenticate with an agent token, browse fleet, systems, and market data, and
+send ships to orbit, dock, navigate, and refuel — with live status updates and
+toast notifications — without hitting the raw API by hand.
 
 SpaceTraders exposes a full game API (fleet, systems/waypoints, markets,
 contracts, factions) but ships no first-party web UI. Space Tracker is a
@@ -13,11 +14,14 @@ holds its own token and sees only that agent's data.
 ## Features
 
 - **Dashboard** - agent identity, credits, ship count, starting system, and a
-  fleet preview
+  fleet preview that live-updates while any ship is in transit
 - **Systems** - browse and search known systems
 - **System detail** - a system's waypoints, with links to markets
-- **Fleet** - list of your ships with status, position, cargo, and fuel
-- **Fleet detail** - a ship's cargo, crew, fuel, and components
+- **Fleet** - list of your ships with status, position, cargo, and fuel;
+  live-updating while any ship is in transit
+- **Fleet detail** - a ship's cargo, crew, fuel, and components; orbit, dock,
+  navigate, and refuel actions with toast feedback and an arrival
+  notification
 - **Markets** - traded goods, prices, and supply/activity at a waypoint
 
 ## Prerequisites
@@ -64,17 +68,17 @@ close that gap but is out of scope for this project.
 
 ## Available scripts
 
-| Command              | Description                                 |
-| -------------------- | ------------------------------------------- |
-| `npm run dev`        | Start the Vite dev server                   |
-| `npm run build`      | Type-check and build for production         |
-| `npm run preview`    | Preview the production build locally        |
-| `npm run type-check` | Type-check with `vue-tsc`                   |
-| `npm run test:unit`  | Run unit tests with Vitest                  |
-| `npm run lint`       | Lint with oxlint then ESLint (read-only)    |
-| `npm run lint:fix`   | Lint with oxlint then ESLint, both `--fix`  |
-| `npm run format`     | Format `src/` with Prettier                 |
-| `npm run format:check` | Check `src/` formatting without writing   |
+| Command                | Description                                |
+| ---------------------- | ------------------------------------------ |
+| `npm run dev`          | Start the Vite dev server                  |
+| `npm run build`        | Type-check and build for production        |
+| `npm run preview`      | Preview the production build locally       |
+| `npm run type-check`   | Type-check with `vue-tsc`                  |
+| `npm run test:unit`    | Run unit tests with Vitest                 |
+| `npm run lint`         | Lint with oxlint then ESLint (read-only)   |
+| `npm run lint:fix`     | Lint with oxlint then ESLint, both `--fix` |
+| `npm run format`       | Format `src/` with Prettier                |
+| `npm run format:check` | Check `src/` formatting without writing    |
 
 GitLab CI runs `npm audit` (non-blocking) → lint + format check →
 type-check → tests → build on every push to `main`, so every merge produces
@@ -96,7 +100,7 @@ solo-project trade-off to keep every change visible without that overhead.
 - **Zod** - API response validation at the boundary
 - **Tailwind CSS 4** - styling
 - **PrimeVue (unstyled)** - interaction logic (sortable/paginated tables,
-  dropdowns, keyboard accessibility)
+  dropdowns) and toast notifications
 - **@fontsource/ibm-plex-mono** - self-hosted IBM Plex Mono
 - **Vitest** - unit tests
 - ESLint + oxlint + Prettier
@@ -107,10 +111,9 @@ Code is organized by domain (`auth`, `systems`, `fleet`, `markets`) with a
 
 ## Not included (by design)
 
-Space Tracker is a read-only viewer, not a way to play the game. On purpose,
-it doesn't cover: ship navigation or piloting, buying/selling on markets,
-contracts or shipyard purchases, faction management, or real-time
-notifications. A mobile-optimized layout is also out of scope — the
+Space Tracker isn't a full way to play the game. On purpose, it doesn't
+cover: buying/selling on markets, contracts or shipyard purchases, or
+faction management. A mobile-optimized layout is also out of scope — the
 data-dense tables need a dedicated redesign, not just breakpoints.
 
 ## Architecture

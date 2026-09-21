@@ -1,6 +1,7 @@
 import type { PrimeVueConfiguration } from 'primevue/config'
 import type { PaginatorContext } from 'primevue/paginator'
 import type { ProgressBarProps } from 'primevue/progressbar'
+import type { ToastMessageOptions } from 'primevue/toast'
 
 const PAGINATOR_NAV_BUTTON =
   'size-8 cursor-pointer rounded-sm border border-line grid place-items-center hover:bg-surface-2 disabled:cursor-not-allowed disabled:border-surface-2 disabled:text-muted/60'
@@ -49,6 +50,28 @@ export const primeVueOptions: PrimeVueConfiguration & { license?: string } = {
           pct >= 50 ? 'bg-accent' : pct >= 20 ? 'bg-warn' : 'bg-danger',
         ]
       },
+    },
+    toast: {
+      root: 'z-[1100] flex w-80 max-w-[calc(100vw-2.5rem)] flex-col gap-3',
+      message: ({ props }: { props: { message: ToastMessageOptions } }) => [
+        'flex items-start gap-3 rounded-md border-l-4 bg-surface-1 px-4 py-3 shadow-lg',
+        'translate-x-10 transition-transform duration-300 ease-out',
+        'data-[mounted]:translate-x-0',
+        'data-[mounted]:data-[removed]:translate-x-100 data-[mounted]:data-[removed]:duration-450',
+        props.message.severity === 'error' ? 'border-danger' : 'border-accent',
+      ],
+      messageContent: 'flex flex-1 items-start gap-3',
+      messageIcon: ({ props }: { props: { message: ToastMessageOptions } }) => [
+        'mt-0.5 size-4 shrink-0',
+        props.message.severity === 'error' ? 'text-danger' : 'text-accent',
+      ],
+      messageText: 'min-w-0 flex-1',
+      summary: 'block text-data font-semibold text-fg',
+      detail: 'mt-1 block text-data text-muted',
+      buttonContainer: 'shrink-0',
+      closeButton:
+        'grid size-6 cursor-pointer place-items-center rounded-sm text-muted hover:bg-surface-2 hover:text-fg',
+      closeIcon: 'size-3.5',
     },
   },
 }
