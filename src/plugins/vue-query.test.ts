@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createApp } from 'vue'
-import { VueQueryPlugin, useQuery } from '@tanstack/vue-query'
+import { VueQueryPlugin, useQuery, useMutation } from '@tanstack/vue-query'
 import { setActivePinia, createPinia } from 'pinia'
 import { z } from 'zod'
 import { queryClient, shouldRetry, retryDelay } from './vue-query'
-import { request } from '@/shared/api/http'
+import { request, mutate } from '@/shared/api/http'
 import { useTokenStore } from '@/stores/token'
 import { ApiError } from '@/shared/api/api-error'
 import { STALE_TIME } from '@/shared/api/query-config'
@@ -98,6 +98,21 @@ describe('queryClient: 401 handling via the real QueryCache', () => {
     )
 
     await vi.waitFor(() => expect(query.isError.value).toBe(true))
+    await vi.waitFor(() => expect(router.currentRoute.value.path).toBe('/login'))
+    expect(useTokenStore().token).toBeNull()
+  })
+
+  it('logs out and redirects to /login when a real useMutation hits a 401', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(401, {}))
+
+    const mutation = withQueryClient(() =>
+      useMutation({
+        mutationFn: () => mutate('/my/ships/SHIP-1/orbit', schema, { method: 'POST' }),
+      }),
+    )
+    mutation.mutate()
+
+    await vi.waitFor(() => expect(mutation.isError.value).toBe(true))
     await vi.waitFor(() => expect(router.currentRoute.value.path).toBe('/login'))
     expect(useTokenStore().token).toBeNull()
   })

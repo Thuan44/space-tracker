@@ -279,7 +279,7 @@ tabular-nums`). No custom spacing tokens needed — the design system's
       letter-spacing design tokens to `main.css` and replace the
       arbitrary Tailwind values they replace.
 
-- [ ] 23. **Ship navigation** - Mutations orbit/dock/navigate/refuel with
+- [x] 23. **Ship navigation** - Mutations orbit/dock/navigate/refuel with
       `useMutation`, UI in `FleetDetailView` (waypoint selector, status-
       conditional buttons), polling temps réel (10s when `IN_TRANSIT`) in
       `FleetDetailView`, `FleetView`, and `DashboardView`. Fondation HTTP

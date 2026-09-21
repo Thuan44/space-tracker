@@ -6,6 +6,7 @@ import DataTable from '@/shared/ui/DataTable.vue'
 import CountUpNumber from '@/shared/ui/CountUpNumber.vue'
 import { useSystemsQuery } from '../composables/useSystemsQuery'
 import PageHeader from '@/shared/ui/PageHeader.vue'
+import ActionButton from '@/shared/ui/ActionButton.vue'
 import { toReadableText } from '@/shared/lib/spacetraders'
 import { symbolSchema } from '../lib/symbol.schema'
 
@@ -103,13 +104,7 @@ const filteredRows = computed(() => {
             aria-label="Explore system symbol"
             class="block w-96 rounded-sm border border-line bg-surface-0 px-3 py-2 text-data text-fg placeholder-muted focus:border-accent focus:outline-none"
           />
-          <button
-            type="submit"
-            :disabled="!parsedSymbol.success"
-            class="flex h-10 w-fit shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-sm bg-accent px-4 text-data font-semibold text-surface-0 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Explore
-          </button>
+          <ActionButton type="submit" :disabled="!parsedSymbol.success"> Explore </ActionButton>
         </form>
       </template>
     </DataTable>

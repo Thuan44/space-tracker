@@ -5,6 +5,7 @@ const MESSAGES: Partial<Record<ApiError['kind'], string>> = {
   network: 'Could not reach the API. Check your connection and try again.',
   'rate-limit': 'Too many requests. Wait a moment and try again.',
   'not-found': 'Not found.',
+  client: 'Action not allowed. Check ship status and try again.',
 }
 
 export function getErrorMessage(error: unknown, fallback: string): string {

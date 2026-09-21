@@ -6,6 +6,11 @@ export interface RequestOptions {
   token?: string
 }
 
+export interface MutateOptions extends RequestOptions {
+  method: 'POST' | 'PATCH' | 'PUT'
+  body?: Record<string, unknown>
+}
+
 function statusToKind(status: number): ApiErrorKind {
   if (status === 401) return 'auth'
   if (status === 404) return 'not-found'
@@ -21,17 +26,31 @@ function retryAfterMsFromHeader(response: Response): number | undefined {
   return Number.isNaN(seconds) ? undefined : seconds * 1000
 }
 
-async function fetchJson(url: string, options?: RequestOptions): Promise<unknown> {
+interface FetchJsonOptions extends RequestOptions {
+  method?: 'GET' | 'POST' | 'PATCH' | 'PUT'
+  body?: Record<string, unknown>
+}
+
+async function fetchJson(url: string, options?: FetchJsonOptions): Promise<unknown> {
   const tokenStore = useTokenStore()
   const token = options?.token ?? tokenStore.token
   const headers: Record<string, string> = {}
+
+  if (options?.body) {
+    headers['Content-Type'] = 'application/json'
+  }
+
   if (token) {
     headers.Authorization = `Bearer ${token}`
   }
 
   let response: Response
   try {
-    response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${url}`, { headers })
+    response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${url}`, {
+      method: options?.method,
+      headers,
+      body: options?.body ? JSON.stringify(options.body) : undefined,
+    })
   } catch {
     throw new ApiError('network', null, 'Network request failed')
   }
@@ -101,4 +120,24 @@ export async function requestPage<T>(
   }
 
   return result.data
+}
+
+/**
+ * Complements request() for write operations while request() handles reads (GET).
+ * Kept separate to avoid confusion between read and write operations.
+ */
+export async function mutate<T>(
+  url: string,
+  schema: z.ZodType<T>,
+  options: MutateOptions,
+): Promise<T> {
+  const body = await fetchJson(url, options)
+  const result = z.object({ data: schema }).safeParse(body)
+
+  if (!result.success) {
+    console.error(result.error.format())
+    throw new ApiError('invalid-response', null, 'Response failed schema validation')
+  }
+
+  return result.data.data
 }

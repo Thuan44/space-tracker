@@ -20,6 +20,8 @@ const { data, isPending, isFetching, isError, error, refetch } = useQuery({
   queryFn: () => getShips({ page: page.value }),
   staleTime: STALE_TIME.ships,
   placeholderData: keepPreviousData,
+  refetchInterval: (query) =>
+    query.state.data?.data.some((ship) => ship.nav.status === 'IN_TRANSIT') ? 10000 : false,
 })
 
 const rows = computed(

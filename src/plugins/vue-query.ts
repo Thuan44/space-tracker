@@ -1,4 +1,4 @@
-import { QueryCache, QueryClient } from '@tanstack/vue-query'
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/vue-query'
 import router from '@/router'
 import { ApiError } from '@/shared/api/api-error'
 import { STALE_TIME } from '@/shared/api/query-config'
@@ -27,6 +27,12 @@ export function retryDelay(failureCount: number, error: unknown): number {
   return Math.min(BASE_DELAY_MS * 2 ** failureCount, MAX_DELAY_MS)
 }
 
+function handleAuthError(error: unknown): void {
+  if (error instanceof ApiError && error.kind === 'auth') {
+    logout(queryClient).then(() => router.push('/login'))
+  }
+}
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -36,10 +42,9 @@ export const queryClient = new QueryClient({
     },
   },
   queryCache: new QueryCache({
-    onError(error) {
-      if (error instanceof ApiError && error.kind === 'auth') {
-        logout(queryClient).then(() => router.push('/login'))
-      }
-    },
+    onError: handleAuthError,
+  }),
+  mutationCache: new MutationCache({
+    onError: handleAuthError,
   }),
 })
