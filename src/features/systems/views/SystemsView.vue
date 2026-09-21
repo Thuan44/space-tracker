@@ -32,6 +32,7 @@ const rows = computed(
     data.value?.data.map((system) => ({
       ...system,
       displayName: system.name ?? system.symbol,
+      displayType: toReadableText(system.type),
       waypointCount: system.waypoints.length,
     })) ?? [],
 )
@@ -44,7 +45,7 @@ const filteredRows = computed(() => {
       row.symbol.toLowerCase().includes(needle) ||
       row.name?.toLowerCase().includes(needle) ||
       row.sectorSymbol.toLowerCase().includes(needle) ||
-      row.type.toLowerCase().includes(needle),
+      row.displayType.toLowerCase().includes(needle),
   )
 })
 </script>
