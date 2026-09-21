@@ -47,6 +47,9 @@ __screenshots__/
 blueprint/reference
 blueprint/specs
 
+# Blueprint generated files
+blueprint/context/project-overview.md
+
 # AI Blueprint (local tooling, not published)
 .agents/
 .claude/skills/
@@ -58,3 +61,4 @@ blueprint/context/findings.md
 blueprint/context/current-feature.md
 blueprint/context/review.md
 blueprint/.state/manifest.json
+blueprint/.state/review-specs/

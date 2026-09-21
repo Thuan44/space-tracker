@@ -31,6 +31,8 @@ const {
   queryKey: shipKeys.preview(),
   queryFn: () => getShips({ limit: 5 }),
   staleTime: STALE_TIME.ships,
+  refetchInterval: (query) =>
+    query.state.data?.data.some((ship) => ship.nav.status === 'IN_TRANSIT') ? 10000 : false,
 })
 </script>
 

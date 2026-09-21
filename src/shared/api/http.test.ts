@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { z } from 'zod'
-import { request, requestPage } from './http'
+import { request, requestPage, mutate } from './http'
 import { useTokenStore } from '@/stores/token'
 
 const schema = z.object({ symbol: z.string() })
@@ -193,6 +193,128 @@ describe('requestPage', () => {
     await expect(requestPage('/systems', schema)).rejects.toMatchObject({
       kind: 'auth',
       status: 401,
+    })
+  })
+})
+
+describe('mutate', () => {
+  beforeEach(() => {
+    sessionStorage.clear()
+    setActivePinia(createPinia())
+    vi.stubGlobal('fetch', vi.fn())
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  it('sends a POST request without a body and without Content-Type header', async () => {
+    useTokenStore().token = 'store-token'
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { data: { symbol: 'AGENT' } }))
+
+    await mutate('/my/ships/SHIP-1/orbit', schema, { method: 'POST' })
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer store-token',
+        },
+      }),
+    )
+  })
+
+  it('sends Content-Type: application/json header when body is provided', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { data: { symbol: 'AGENT' } }))
+
+    await mutate('/my/ships/SHIP-1/navigate', schema, {
+      method: 'POST',
+      body: { waypointSymbol: 'X1-DF55-20250Z' },
+    })
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+        }),
+      }),
+    )
+  })
+
+  it('serializes the body with JSON.stringify when body is provided', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { data: { symbol: 'AGENT' } }))
+
+    await mutate('/my/ships/SHIP-1/navigate', schema, {
+      method: 'POST',
+      body: { waypointSymbol: 'X1-A1' },
+    })
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ waypointSymbol: 'X1-A1' }),
+      }),
+    )
+  })
+
+  it('omits body when not provided', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { data: { symbol: 'AGENT' } }))
+
+    await mutate('/my/ships/SHIP-1/orbit', schema, { method: 'POST' })
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        method: 'POST',
+        body: undefined,
+      }),
+    )
+  })
+
+  it('supports PATCH and PUT methods', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { data: { symbol: 'AGENT' } }))
+
+    await mutate('/my/ships/SHIP-1', schema, { method: 'PATCH' })
+    expect(fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ method: 'PATCH' }),
+    )
+
+    await mutate('/my/ships/SHIP-1', schema, { method: 'PUT' })
+    expect(fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ method: 'PUT' }),
+    )
+  })
+
+  it('returns the parsed data on a successful response', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { data: { symbol: 'AGENT' } }))
+
+    const result = await mutate('/my/ships/SHIP-1/orbit', schema, { method: 'POST' })
+
+    expect(result).toEqual({ symbol: 'AGENT' })
+  })
+
+  it('throws an ApiError with kind "client" on a 400 response', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(400, {}))
+
+    await expect(
+      mutate('/my/ships/SHIP-1/orbit', schema, { method: 'POST' }),
+    ).rejects.toMatchObject({
+      kind: 'client',
+      status: 400,
+    })
+  })
+
+  it('throws an ApiError with kind "network" when fetch itself rejects', async () => {
+    vi.mocked(fetch).mockRejectedValue(new TypeError('Failed to fetch'))
+
+    await expect(
+      mutate('/my/ships/SHIP-1/orbit', schema, { method: 'POST' }),
+    ).rejects.toMatchObject({
+      kind: 'network',
+      status: null,
     })
   })
 })
