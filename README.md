@@ -124,24 +124,36 @@ folder and, when it fetches data or has logic worth sharing, its own `api/`
 and/or `composables/`. `src/shared/` holds cross-cutting UI components,
 composables, utilities, and the API client used across domains.
 
-Data flows one way, view to server:
+Data flows both ways:
+
+**View to server** (queries and mutations):
 
 ```
-view (.vue) → useQuery → api/*.ts → shared/api/http.ts → Zod schema
+view (.vue) → useQuery/useMutation → api/*.ts → shared/api/http.ts → Zod schema
 ```
 
-A view calls TanStack Query's `useQuery` directly, or through a small domain
-composable when one exists (e.g. `useSystemsQuery`, `useAgentQuery`) — either
-way, the query function is a domain `api/*.ts` function. That function calls
-`shared/api/http.ts`'s `request`/`requestPage`, which fetches from the
-SpaceTraders API, validates the JSON response against a Zod schema, and
-throws a typed `ApiError` (`shared/api/api-error.ts`) rather than a generic
-`Error` for any failure — a rejected `fetch`, a non-2xx status, a malformed
-body, or a schema mismatch each get their own `kind`
-(`auth`/`not-found`/`rate-limit`/`client`/`server`/`network`/`invalid-response`),
+A view calls TanStack Query's `useQuery` or `useMutation` directly, or through
+a small domain composable when one exists (e.g. `useSystemsQuery`,
+`useAgentQuery`, `useShipNavigation`) — either way, the query/mutation function
+is a domain `api/*.ts` function. That function calls `shared/api/http.ts`'s
+`request`/`requestPage`/`mutate`, which fetches from the SpaceTraders API,
+validates the JSON response against a Zod schema, and throws a typed `ApiError`
+(`shared/api/api-error.ts`) rather than a generic `Error` for any failure — a
+rejected `fetch`, a non-2xx status, a malformed body, or a schema mismatch each
+get their own `kind` (`auth`/`not-found`/`rate-limit`/`client`/`server`/`network`/`invalid-response`),
 so callers can tell them apart instead of catching one opaque message.
 `shared/lib/error-message.ts`'s `getErrorMessage(error, fallback)` turns that
-`kind` into user-facing copy (used today by `LoginView`).
+`kind` into user-facing copy (used by `LoginView` and fleet navigation actions).
+
+**Server to view** (live updates and notifications):
+
+TanStack Query's automatic refetch and polling keep views current as server
+state changes. Fleet views (`DashboardView`, `FleetView`, `FleetDetailView`)
+poll their queries while any ship is in transit, so tables and status badges
+update live as ships move. `FleetDetailView` watches the loaded ship's
+`nav.status` and fires a PrimeVue toast notification when a ship arrives at
+its destination. Navigation actions (orbit, dock, navigate, refuel) also
+trigger immediate success/error toasts.
 
 State is split by kind, not by convenience: **Pinia** (`src/stores/`) holds
 client-only state — currently just the agent token/session — and never
@@ -166,17 +178,23 @@ separate auth service; any query can trigger this path.
   against a Zod schema turns a silent shape mismatch into a thrown error at
   the one place it's easy to trace, instead of a `TypeError` deep in a
   component.
-- **TanStack Query for server state** - fetching, caching, and loading/error
-  state for fleet/systems/market data are TanStack Query's job, so components
-  and Pinia stores don't reimplement request de-duplication or cache
-  invalidation.
+- **TanStack Query for server state** - fetching, caching, loading/error
+  state, and mutations for fleet/systems/market data are TanStack Query's job,
+  so components and Pinia stores don't reimplement request de-duplication,
+  cache invalidation, or optimistic updates. Polling with `refetchInterval`
+  keeps fleet views live while ships are in transit.
 - **`sessionStorage` for the token** - the token is treated as sensitive as a
   password. `sessionStorage` clears itself when the tab closes, unlike
   `localStorage`, which would outlive the session; it's still visible in
   DevTools, an accepted risk for a backend-less SPA.
 - **PrimeVue unstyled + Tailwind** - PrimeVue supplies interaction logic
-  (sortable/paginated tables, keyboard accessibility) while Tailwind drives
-  100% of the visuals, avoiding a fight between two styling systems.
+  (sortable/paginated tables, toast notifications) while Tailwind drives 100%
+  of the visuals, avoiding a fight between two styling systems.
+- **Polling over WebSockets** - live status updates use TanStack Query's
+  `refetchInterval` polling rather than WebSockets. This keeps the
+  architecture simple (no persistent connection, no server-side state) while
+  still providing near-real-time updates for ship movements. The SpaceTraders
+  API doesn't expose WebSockets, so polling is the only option for live data.
 
 ## Tests
 
